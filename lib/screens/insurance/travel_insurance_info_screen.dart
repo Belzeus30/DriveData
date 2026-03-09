@@ -234,6 +234,10 @@ class TravelInsuranceInfoScreen extends StatelessWidget {
 
 // --------------------------------------------------------------------------
 
+/// Expandable information card for a single travel insurance coverage category.
+///
+/// Displays an [icon], [title], [priority] label, a descriptive [body], and
+/// a list of practical [tips] inside an [ExpansionTile].
 class _CoverageCard extends StatelessWidget {
   final String icon;
   final Color color;
@@ -297,6 +301,9 @@ class _CoverageCard extends StatelessWidget {
   }
 }
 
+/// A simple two-column row used in the price comparison table.
+///
+/// Shows [label] on the left and bold [price] on the right.
 class _PriceRow extends StatelessWidget {
   final String label;
   final String price;

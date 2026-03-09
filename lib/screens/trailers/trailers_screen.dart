@@ -6,6 +6,13 @@ import '../../providers/trailer_provider.dart';
 import '../settings/settings_screen.dart';
 import 'add_edit_trailer_screen.dart';
 
+/// Trailers & caravans management screen.
+///
+/// Reads from [TrailerProvider] and splits trailers into two visual sections:
+/// 1. **Attention** — trailers whose MOT (STK) date is overdue or due soon.
+/// 2. **Trailers** — all other trailers without urgent reminder.
+///
+/// The FAB navigates to [AddEditTrailerScreen] to create a new trailer.
 class TrailersScreen extends StatelessWidget {
   const TrailersScreen({super.key});
 
@@ -105,6 +112,7 @@ class TrailersScreen extends StatelessWidget {
     );
   }
 
+  /// Opens [AddEditTrailerScreen] in edit mode for [trailer].
   void _openEdit(BuildContext context, Trailer trailer) {
     Navigator.push(
         context,
@@ -112,6 +120,10 @@ class TrailersScreen extends StatelessWidget {
             builder: (_) => AddEditTrailerScreen(trailer: trailer)));
   }
 
+  /// Shows a confirmation dialog and deletes [trailer] if confirmed.
+  ///
+  /// Trips that referenced this trailer are kept but their [trailerId]
+  /// reference will be `null` after the provider cascade.
   Future<void> _delete(BuildContext context, Trailer trailer) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -138,9 +150,17 @@ class TrailersScreen extends StatelessWidget {
 
 // --------------------------------------------------------------------------
 
+/// Card widget representing a single [Trailer].
+///
+/// - Card background turns red/orange for overdue or soon-due MOT.
+/// - Computes a human-readable MOT status string from [Trailer.daysUntilTech].
+/// - Supports swipe-to-delete (end-to-start) which delegates to [onDelete].
+/// - Tapping invokes [onTap] to open edit mode.
 class _TrailerCard extends StatelessWidget {
   final Trailer trailer;
+  /// `true` when the MOT date has already passed.
   final bool isOverdue;
+  /// `true` when the MOT date is within the reminder window.
   final bool isDueSoon;
   final VoidCallback onTap;
   final VoidCallback onDelete;
@@ -153,6 +173,7 @@ class _TrailerCard extends StatelessWidget {
     required this.onDelete,
   });
 
+  /// Shared date formatter for the MOT due-date display.
   static final _dateFmt = DateFormat('d. M. yyyy');
 
   @override

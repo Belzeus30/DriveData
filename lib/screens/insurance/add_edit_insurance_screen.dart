@@ -14,7 +14,21 @@ import '../../services/notification_service.dart';
 import '../../utils/constants.dart';
 import 'travel_insurance_info_screen.dart';
 
+/// Form screen for creating or editing an [InsurancePolicy].
+///
+/// Supports all policy types defined in [AppConstants.insuranceTypes].
+/// When [isTravel] is `true`, an additional section exposes travel-specific
+/// coverage checkboxes (medical, luggage, delay, liability, cancellation,
+/// sports) and a medical-limit field.
+///
+/// Pass [policy] to open in edit mode.
+///
+/// Notable logic:
+/// - [_attachmentPath] tracks the copied file path; unsaved picks that differ
+///   from [_originalAttachmentPath] are deleted in [dispose].
+/// - The [_saved] flag prevents file cleanup when the record was committed.
 class AddEditInsuranceScreen extends StatefulWidget {
+  /// The policy to edit, or `null` to create a new one.
   final InsurancePolicy? policy;
   const AddEditInsuranceScreen({super.key, this.policy});
 
@@ -22,6 +36,10 @@ class AddEditInsuranceScreen extends StatefulWidget {
   State<AddEditInsuranceScreen> createState() => _AddEditInsuranceScreenState();
 }
 
+/// State for [AddEditInsuranceScreen].
+///
+/// Manages form controllers, date pickers, coverage booleans, and attachment
+/// file path.
 class _AddEditInsuranceScreenState extends State<AddEditInsuranceScreen> {
   static final _dateFmt = DateFormat('d. M. yyyy');
 
@@ -51,13 +69,15 @@ class _AddEditInsuranceScreenState extends State<AddEditInsuranceScreen> {
   bool _coversCancellation = false;
   bool _coversSports = false;
 
+  /// `true` when editing an existing policy.
   bool get isEditing => widget.policy != null;
+  /// `true` when the selected policy type is travel insurance.
   bool get isTravel => _type == 'travel';
 
+  /// Populates all form controllers and boolean flags from [widget.policy].
+  /// Defaults [_validTo] to one year from today when creating a new policy.
   @override
   void initState() {
-    super.initState();
-    final pol = widget.policy;
     _type = pol?.type ?? AppConstants.insuranceTypes.first;
     _carId = pol?.carId;
     _providerCtrl.text = pol?.provider ?? '';
@@ -80,6 +100,8 @@ class _AddEditInsuranceScreenState extends State<AddEditInsuranceScreen> {
     _originalAttachmentPath = pol?.attachmentPath;
   }
 
+  /// Disposes all controllers and removes any orphaned attachment copy
+  /// that was picked but not saved.
   @override
   void dispose() {
     // If the form was closed without saving and the user picked a NEW attachment

@@ -6,7 +6,17 @@ import '../../providers/trailer_provider.dart';
 import '../../providers/trip_provider.dart';
 import '../../utils/constants.dart';
 
+/// Form screen for creating or editing a [Trip].
+///
+/// Collects all trip data: car selection, date, odometer readings, route type,
+/// weather, traffic level, fuel info, speed stats, AC usage, outside temperature,
+/// trip-computer consumption, locations, and a free-text note. Pass [trip] to
+/// open in edit mode.
+///
+/// The fuel section is conditionally shown when [_didFuel] is `true`.
+/// [_fullTank] toggles whether the full-tank cost field is required.
 class AddEditTripScreen extends StatefulWidget {
+  /// The trip to edit, or `null` to create a new one.
   final Trip? trip;
   const AddEditTripScreen({super.key, this.trip});
 
@@ -14,6 +24,10 @@ class AddEditTripScreen extends StatefulWidget {
   State<AddEditTripScreen> createState() => _AddEditTripScreenState();
 }
 
+/// State for [AddEditTripScreen].
+///
+/// One [TextEditingController] per numeric/text field; dropdown/chip
+/// selections stored as typed state variables.
 class _AddEditTripScreenState extends State<AddEditTripScreen> {
   final _formKey = GlobalKey<FormState>();
 
@@ -41,8 +55,10 @@ class _AddEditTripScreenState extends State<AddEditTripScreen> {
   bool _fullTank = false;
   String? _trailerId;
 
+  /// `true` when editing an existing trip.
   bool get isEditing => widget.trip != null;
 
+  /// Populates all controllers and state variables from [widget.trip].
   @override
   void initState() {
     super.initState();
@@ -75,6 +91,7 @@ class _AddEditTripScreenState extends State<AddEditTripScreen> {
     }
   }
 
+  /// Disposes all [TextEditingController]s.
   @override
   void dispose() {
     for (final ctrl in [
@@ -87,6 +104,8 @@ class _AddEditTripScreenState extends State<AddEditTripScreen> {
     super.dispose();
   }
 
+  /// Collects form values, validates, and calls [TripProvider.addTrip] or
+  /// [TripProvider.updateTrip]. Pops the route on success.
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 

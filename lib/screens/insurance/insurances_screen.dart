@@ -197,17 +197,31 @@ class InsurancesContent extends StatelessWidget {
 
 // --------------------------------------------------------------------------
 
+/// Card widget representing a single [InsurancePolicy] in the list.
+///
+/// - Card background turns red/orange for overdue or soon-expiring policies.
+/// - Supports swipe-to-delete (end-to-start) which calls [onDelete].
+/// - Optional [onOpenAttachment] icon opens the stored PDF or image via
+///   [OpenFilex] when the attachment icon is tapped.
+/// - [dimmed] reduces opacity when the policy is not highlighted at the top.
 class _PolicyCard extends StatelessWidget {
+  /// Czech date formatter for validity dates.
   static final _dateFmt = DateFormat('d. M. yyyy');
+  /// Czech currency amount formatter (e.g. `12\u202f345`).
   static final _amtFmt = NumberFormat('#,##0', 'cs');
 
   final InsurancePolicy policy;
+  /// Human-readable car name or an `'Vs̆echna auta'` fallback.
   final String carName;
+  /// `true` when the policy validity has already expired.
   final bool isOverdue;
+  /// `true` when the policy expires within the reminder window.
   final bool isDueSoon;
+  /// When `true`, the card is rendered at reduced opacity.
   final bool dimmed;
   final VoidCallback onTap;
   final Future<void> Function() onDelete;
+  /// Callback to open the attachment file, or `null` if no attachment exists.
   final VoidCallback? onOpenAttachment;
 
   const _PolicyCard({

@@ -5,7 +5,13 @@ import '../../providers/car_provider.dart';
 import '../../providers/goal_provider.dart';
 import '../../utils/constants.dart';
 
+/// Form screen for creating or editing a driving [Goal].
+///
+/// Allows the user to pick a goal type (distance, trip count, fuel, etc.),
+/// optionally scope it to a specific car, set a target value, and add an
+/// optional deadline. Pass [goal] to open in edit mode.
 class AddEditGoalScreen extends StatefulWidget {
+  /// The goal to edit, or `null` to create a new one.
   final Goal? goal;
   const AddEditGoalScreen({super.key, this.goal});
 
@@ -13,6 +19,7 @@ class AddEditGoalScreen extends StatefulWidget {
   State<AddEditGoalScreen> createState() => _AddEditGoalScreenState();
 }
 
+/// State for [AddEditGoalScreen].
 class _AddEditGoalScreenState extends State<AddEditGoalScreen> {
   final _formKey = GlobalKey<FormState>();
   late String _goalType;
@@ -20,8 +27,10 @@ class _AddEditGoalScreenState extends State<AddEditGoalScreen> {
   final _targetCtrl = TextEditingController();
   DateTime? _deadline;
 
+  /// `true` when editing an existing goal, `false` for a new goal.
   bool get isEditing => widget.goal != null;
 
+  /// Populates state from [widget.goal] when editing.
   @override
   void initState() {
     super.initState();
@@ -38,6 +47,8 @@ class _AddEditGoalScreenState extends State<AddEditGoalScreen> {
     super.dispose();
   }
 
+  /// Validates form; calls [GoalProvider.addGoal] or [GoalProvider.updateGoal]
+  /// then pops on success.
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     final provider = context.read<GoalProvider>();

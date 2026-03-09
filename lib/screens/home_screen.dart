@@ -26,6 +26,15 @@ const _navItems = [
   (icon: Icons.bar_chart_outlined, active: Icons.bar_chart, label: 'Analýza'),
 ];
 
+/// Root navigation shell of the app.
+///
+/// Wraps the 7 main sections (Trips, Cars, Trailers, Service, Insurance,
+/// Goals, Analytics) in an [IndexedStack] so every screen stays alive and
+/// preserves scroll/filter state while the user switches tabs.
+///
+/// Layout adapts to screen width:
+/// - **≥ 600 px** – persistent [NavigationRail] on the left (tablets / foldables).
+/// - **< 600 px**  – [NavigationBar] at the bottom (phones).
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -33,9 +42,15 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+/// State for [HomeScreen].
+///
+/// Holds [_currentIndex] (the active tab) and the fixed [_screens] list
+/// whose order must match [_navItems].
 class _HomeScreenState extends State<HomeScreen> {
+  /// Index of the currently visible tab (0 = Trips … 6 = Analytics).
   int _currentIndex = 0;
 
+  /// Ordered list of full-screen content widgets kept alive by [IndexedStack].
   final _screens = const [
     TripsScreen(),
     CarsScreen(),
@@ -46,6 +61,10 @@ class _HomeScreenState extends State<HomeScreen> {
     AnalyticsScreen(),
   ];
 
+  /// Triggers an initial data load from the database for all providers.
+  ///
+  /// Uses [WidgetsBinding.addPostFrameCallback] so the Provider tree is fully
+  /// mounted before the first [loadCars] / [loadTrips] etc. calls are made.
   @override
   void initState() {
     super.initState();
@@ -59,6 +78,11 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// Builds the adaptive navigation shell.
+  ///
+  /// Switches between a [NavigationRail] (wide) and a [NavigationBar] (narrow)
+  /// based on [LayoutBuilder] constraints. Both variants share the same
+  /// [IndexedStack] of [_screens].
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(

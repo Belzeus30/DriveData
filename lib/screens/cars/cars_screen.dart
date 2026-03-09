@@ -9,6 +9,11 @@ import '../../providers/trip_provider.dart';
 import 'add_edit_car_screen.dart';
 import '../settings/settings_screen.dart';
 
+/// Garage screen — lists all cars owned by the user.
+///
+/// Reads from [CarProvider] and renders each vehicle as a [_CarTile].
+/// The FAB navigates to [AddEditCarScreen] to create a new car.
+/// Settings are accessible via the AppBar action icon.
 class CarsScreen extends StatelessWidget {
   const CarsScreen({super.key});
 
@@ -70,12 +75,27 @@ class CarsScreen extends StatelessWidget {
   }
 }
 
+/// Card widget showing a single car's key specs and a context menu.
+///
+/// - Displays a gradient avatar with the car's initial letter and a 
+///   brand-derived accent colour (see [_accentColor]).
+/// - Tapping opens [AddEditCarScreen] in edit mode.
+/// - The popup menu allows **edit** and **delete**; deleting a car also
+///   triggers cascade reloads of trips, service records, policies, and goals.
 class _CarTile extends StatelessWidget {
+  /// The car to render.
   final Car car;
   const _CarTile({required this.car});
 
+  /// Cache shared across all [_CarTile] instances to avoid recomputing
+  /// the same hue for the same make+model combination on every rebuild.
   static final _colorCache = <String, Color>{};
 
+  /// Derives a deterministic accent colour from [car.make] + [car.model].
+  ///
+  /// Uses a simple polynomial hash over the code units to obtain a hue in
+  /// [0, 360) and converts to HSL(h, 52%, 42%) for readable, saturated colour.
+  /// Results are memoised in [_colorCache].
   Color _accentColor() {
     final key = '${car.make}|${car.model}';
     return _colorCache.putIfAbsent(key, () {
@@ -224,6 +244,9 @@ class _CarTile extends StatelessWidget {
   }
 }
 
+/// Compact spec tag chip shown in [_CarTile] for a single technical attribute.
+///
+/// Renders [label] (e.g. `'⚡ 120 kW'`) on a surface-variant background.
 class _SpecTag extends StatelessWidget {
   final String label;
   final ColorScheme cs;

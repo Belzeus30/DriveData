@@ -10,6 +10,14 @@ import '../../utils/constants.dart';
 import '../settings/settings_screen.dart';
 import 'add_edit_service_screen.dart';
 
+/// Service records screen.
+///
+/// Shows upcoming service reminders at the top, followed by a cost-summary
+/// bar and a scrollable list of all service records. Supports optional
+/// per-car filtering: the selected car ID is persisted inside [ServiceProvider]
+/// (unlike [TripsScreen] which keeps the filter locally in its state).
+///
+/// Depends on [CarProvider], [ServiceProvider], and [TripProvider].
 class ServiceScreen extends StatelessWidget {
   const ServiceScreen({super.key});
 
@@ -128,6 +136,9 @@ class ServiceScreen extends StatelessWidget {
 
 // ---------- Filter banner ----------
 
+/// Thin coloured banner displayed when a car filter is active in [ServiceScreen].
+///
+/// Mirrors the design of [_FilterBanner] used in [TripsScreen].
 class _ServiceFilterBanner extends StatelessWidget {
   final String carName;
   final VoidCallback onClear;
@@ -167,7 +178,12 @@ class _ServiceFilterBanner extends StatelessWidget {
 
 // ---------- Reminders ----------
 
+/// Section widget that groups all upcoming/overdue service reminders.
+///
+/// Rendered above the main list. Each item is a [_ReminderTile] whose
+/// background colour indicates urgency (red = overdue, orange = due soon).
 class _RemindersSection extends StatelessWidget {
+  /// List of reminder structs returned by [ServiceProvider.getReminders].
   final List<({ServiceRecord record, bool isOverdue, bool isDueSoon})> reminders;
   final CarProvider carProvider;
 
@@ -200,12 +216,20 @@ class _RemindersSection extends StatelessWidget {
   }
 }
 
+/// Individual reminder row inside [_RemindersSection].
+///
+/// Shows the service type icon, label, car name, and either a date (from
+/// [ServiceRecord.nextDueDate]) or an odometer threshold
+/// ([ServiceRecord.nextDueOdometer]) or both. Tapping opens the record
+/// in [AddEditServiceScreen].
 class _ReminderTile extends StatelessWidget {
+  /// The reminder data record with its urgency flags.
   final ({ServiceRecord record, bool isOverdue, bool isDueSoon}) reminder;
   final CarProvider carProvider;
 
   const _ReminderTile({required this.reminder, required this.carProvider});
 
+  /// Shared date formatter for the due-date display.
   static final _dateFmt = DateFormat('d. M. yyyy');
 
   @override
@@ -299,7 +323,11 @@ class _ReminderTile extends StatelessWidget {
 
 // ---------- Summary & Tiles ----------
 
+/// Horizontal summary banner showing total service cost and record count
+/// for the currently filtered set of records.
 class _SummaryBar extends StatelessWidget {
+  /// The provider whose [ServiceProvider.totalServiceCost] and
+  /// [ServiceProvider.records] are displayed.
   final ServiceProvider provider;
   const _SummaryBar({required this.provider});
 
@@ -339,6 +367,13 @@ class _SummaryBar extends StatelessWidget {
   }
 }
 
+/// List tile for a single [ServiceRecord].
+///
+/// - Shows service type icon, label, car name, date, odometer, cost, and note.
+/// - Optional attachment opens via [OpenFilex.open] when the attachment icon
+///   is tapped (PDF uses a PDF icon; images use an image icon).
+/// - The delete icon button presents a confirmation dialog before calling
+///   [ServiceProvider.deleteRecord].
 class _ServiceTile extends StatelessWidget {
   final ServiceRecord record;
   final String carName;

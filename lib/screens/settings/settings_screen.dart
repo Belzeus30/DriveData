@@ -10,6 +10,16 @@ import '../../providers/trailer_provider.dart';
 import '../../providers/trip_provider.dart';
 import '../../services/backup_service.dart';
 
+/// Settings screen.
+///
+/// Provides three sections:
+/// 1. **Data backup** — export/import a JSON backup via [BackupService].
+/// 2. **Appearance** — light/dark/system theme toggle and seed colour picker
+///    via [ThemeProvider].
+/// 3. **About** — app name, version, and description.
+///
+/// Import triggers a confirmation dialog (all current data is overwritten) and
+/// reloads all providers after a successful restore.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -17,10 +27,17 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
+/// State for [SettingsScreen].
+///
+/// Tracks loading states for export and import operations so buttons can
+/// show a progress indicator while an async operation is in progress.
 class _SettingsScreenState extends State<SettingsScreen> {
+  /// `true` while [BackupService.exportBackup] is running.
   bool _exportLoading = false;
+  /// `true` while [BackupService.importBackup] is running.
   bool _importLoading = false;
 
+  /// Runs [BackupService.exportBackup] and shows error feedback on failure.
   Future<void> _export() async {
     setState(() => _exportLoading = true);
     try {
@@ -36,6 +53,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  /// Opens a JSON file picker, shows a destructive-action confirmation,
+  /// calls [BackupService.importBackup], reloads all providers, and
+  /// shows a success / error [SnackBar].
   Future<void> _import() async {
     // File picker
     final result = await FilePicker.platform.pickFiles(
@@ -301,6 +321,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
+/// Styled section-header label inside the settings list.
+///
+/// Renders [text] in the theme's primary colour using `labelLarge` style.
 class _SectionHeader extends StatelessWidget {
   final String text;
   const _SectionHeader(this.text);

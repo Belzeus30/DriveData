@@ -11,7 +11,18 @@ import '../../providers/service_provider.dart';
 import '../../services/notification_service.dart';
 import '../../utils/constants.dart';
 
+/// Form screen for creating or editing a [ServiceRecord].
+///
+/// Collects service type, car, date, odometer, cost, provider, next-due date,
+/// next-due odometer, note, and an optional attachment (photo or PDF).
+/// Pass [record] to open in edit mode.
+///
+/// Notable logic:
+/// - [_applySmartNextDue] automatically suggests the next service date based
+///   on the selected service type when the user hasn't entered one manually.
+/// - Unsaved attachments are cleaned up in [dispose] to avoid orphaned files.
 class AddEditServiceScreen extends StatefulWidget {
+  /// The service record to edit, or `null` to create a new one.
   final ServiceRecord? record;
   const AddEditServiceScreen({super.key, this.record});
 
@@ -19,6 +30,7 @@ class AddEditServiceScreen extends StatefulWidget {
   State<AddEditServiceScreen> createState() => _AddEditServiceScreenState();
 }
 
+/// State for [AddEditServiceScreen].
 class _AddEditServiceScreenState extends State<AddEditServiceScreen> {
   final _formKey = GlobalKey<FormState>();
   late String _carId;
@@ -33,6 +45,7 @@ class _AddEditServiceScreenState extends State<AddEditServiceScreen> {
   String? _attachmentPath;
   String? _originalAttachmentPath;
 
+  /// `true` when editing an existing service record.
   bool get isEditing => widget.record != null;
 
   /// Auto-fills nextDueDate based on the selected service type and record date.
@@ -49,6 +62,9 @@ class _AddEditServiceScreenState extends State<AddEditServiceScreen> {
     setState(() => _nextDueDate = proposed);
   }
 
+  /// Populates all form fields from [widget.record] when editing.
+  /// For new records, immediately calls [_applySmartNextDue] to pre-fill
+  /// the next-due date.
   @override
   void initState() {
     super.initState();

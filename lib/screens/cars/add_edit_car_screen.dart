@@ -4,7 +4,13 @@ import '../../providers/car_provider.dart';
 import '../../models/car.dart';
 import '../../utils/constants.dart';
 
+/// Form screen for creating or editing a [Car].
+///
+/// Pass [car] when editing an existing vehicle; leave it `null` to create a
+/// new one. The [isEditing] getter drives AppBar title and provider method
+/// selection ([CarProvider.updateCar] vs [CarProvider.addCar]).
 class AddEditCarScreen extends StatefulWidget {
+  /// The car to edit, or `null` to create a new one.
   final Car? car;
   const AddEditCarScreen({super.key, this.car});
 
@@ -12,6 +18,10 @@ class AddEditCarScreen extends StatefulWidget {
   State<AddEditCarScreen> createState() => _AddEditCarScreenState();
 }
 
+/// State for [AddEditCarScreen].
+///
+/// Manages a [_formKey] and individual [TextEditingController]s for every
+/// editable field. [_fuelType] is a separate dropdown string.
 class _AddEditCarScreenState extends State<AddEditCarScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _makeCtrl;
@@ -24,8 +34,10 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
   late TextEditingController _typicalConsumptionCtrl;
   late String _fuelType;
 
+  /// `true` when editing an existing car, `false` when creating a new one.
   bool get isEditing => widget.car != null;
 
+  /// Populates text controllers from [widget.car] when editing.
   @override
   void initState() {
     super.initState();
@@ -41,6 +53,7 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
     _fuelType = c?.fuelType ?? AppConstants.fuelTypes.first;
   }
 
+  /// Disposes all [TextEditingController]s.
   @override
   void dispose() {
     for (final ctrl in [_makeCtrl, _modelCtrl, _yearCtrl, _tankCtrl, _engineVolCtrl, _powerCtrl, _noteCtrl, _typicalConsumptionCtrl]) {
@@ -49,6 +62,8 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
     super.dispose();
   }
 
+  /// Validates the form, calls [CarProvider.addCar] or [CarProvider.updateCar],
+  /// then pops the route on success.
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     final provider = context.read<CarProvider>();

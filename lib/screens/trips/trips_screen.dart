@@ -10,6 +10,13 @@ import '../../utils/constants.dart';
 import 'add_edit_trip_screen.dart';
 import '../settings/settings_screen.dart';
 
+/// Main trips list screen.
+///
+/// Displays all recorded trips in a scrollable card list. Supports an
+/// optional per-car filter that is applied locally in this screen only
+/// (independent from the global car filter used in [AnalyticsScreen]).
+///
+/// Depends on [TripProvider], [CarProvider], and [TrailerProvider].
 class TripsScreen extends StatefulWidget {
   const TripsScreen({super.key});
 
@@ -17,7 +24,13 @@ class TripsScreen extends StatefulWidget {
   State<TripsScreen> createState() => _TripsScreenState();
 }
 
+/// State for [TripsScreen].
+///
+/// [_carFilterId] holds the currently selected car UUID, or `null` when
+/// all cars are shown. The sentinel value `'__all__'` from the
+/// [PopupMenuButton] is converted to `null` on selection.
 class _TripsScreenState extends State<TripsScreen> {
+  /// UUID of the car to filter by, or `null` for "all cars".
   String? _carFilterId;
 
   @override
@@ -143,8 +156,13 @@ class _TripsScreenState extends State<TripsScreen> {
   }
 }
 
+/// Thin coloured banner displayed below the AppBar when a car filter is active.
+///
+/// Shows the active car name and a "Zrušit filtr" button that invokes [onClear].
 class _FilterBanner extends StatelessWidget {
+  /// Display name of the car currently being filtered.
   final String carName;
+  /// Callback to clear the active filter.
   final VoidCallback onClear;
   const _FilterBanner({required this.carName, required this.onClear});
 
@@ -180,10 +198,20 @@ class _FilterBanner extends StatelessWidget {
   }
 }
 
+/// Card widget representing a single [Trip] in the trips list.
+///
+/// - Shows a coloured left strip whose colour matches the route type.
+/// - Displays a circular driving-score badge (color-coded: green/orange/red).
+/// - Supports swipe-to-delete (end-to-start) with a confirmation dialog.
+/// - Tapping opens [AddEditTripScreen] in edit mode.
 class _TripCard extends StatelessWidget {
+  /// The trip to display.
   final Trip trip;
+  /// The car this trip belongs to, or `null` if the car has been deleted.
   final Car? car;
+  /// Per-car median fuel consumption used as baseline for driving-score calculation.
   final double? baseline;
+  /// Display name of the attached trailer, or `null` if no trailer was used.
   final String? trailerName;
 
   const _TripCard({required this.trip, required this.car, this.baseline, this.trailerName});
@@ -386,8 +414,14 @@ class _TripCard extends StatelessWidget {
   }
 }
 
+/// Horizontal wrap of stat chips under the main trip header row.
+///
+/// Always shows distance and duration; conditionally shows fuel consumption,
+/// cost-per-km, trailer name, and a weather emoji chip.
 class _StatsRow extends StatelessWidget {
+  /// The trip whose stats are displayed.
   final Trip trip;
+  /// Optional trailer name shown with a hook icon.
   final String? trailerName;
   const _StatsRow({required this.trip, this.trailerName});
 
@@ -415,10 +449,16 @@ class _StatsRow extends StatelessWidget {
   }
 }
 
+/// Small pill-shaped chip with an icon and a text label.
+///
+/// Used inside [_StatsRow] for numeric trip statistics such as distance,
+/// duration, and fuel consumption. An optional [color] overrides the default
+/// surface colour for highlighting special chips (e.g. trailer name).
 class _StatChip extends StatelessWidget {
   final IconData icon;
   final String text;
   final ColorScheme cs;
+  /// Optional accent colour; defaults to [ColorScheme.onSurfaceVariant].
   final Color? color;
   const _StatChip(this.icon, this.text, this.cs, {this.color});
 
@@ -449,7 +489,12 @@ class _StatChip extends StatelessWidget {
   }
 }
 
+/// Renders a single weather emoji in a surface-coloured pill.
+///
+/// Returns [SizedBox.shrink] when [emoji] is empty so the [Wrap] layout
+/// is not affected by missing weather data.
 class _EmojiChip extends StatelessWidget {
+  /// The emoji character to display (e.g. `'☀️'`).
   final String emoji;
   final ColorScheme cs;
   const _EmojiChip(this.emoji, this.cs);

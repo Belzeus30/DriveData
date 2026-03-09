@@ -9,6 +9,13 @@ import '../../utils/constants.dart';
 import 'add_edit_goal_screen.dart';
 import '../settings/settings_screen.dart';
 
+/// Goals & challenges screen.
+///
+/// Displays two tabs — **Active** and **Archive** — backed by a [TabController].
+/// Each tab renders a [_GoalsList] that shows progress (computed on-the-fly from
+/// [TripProvider]) for every [Goal] in [GoalProvider].
+///
+/// Depends on [GoalProvider], [TripProvider], and [CarProvider].
 class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});
 
@@ -16,16 +23,22 @@ class GoalsScreen extends StatefulWidget {
   State<GoalsScreen> createState() => _GoalsScreenState();
 }
 
+/// State for [GoalsScreen].
+///
+/// Uses [SingleTickerProviderStateMixin] to provide a vsync for [TabController].
 class _GoalsScreenState extends State<GoalsScreen>
     with SingleTickerProviderStateMixin {
+  /// Controls the Active / Archive tab selection.
   late TabController _tabController;
 
+  /// Initialises the [TabController] with 2 tabs.
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
   }
 
+  /// Disposes [_tabController] to free the animation ticker.
   @override
   void dispose() {
     _tabController.dispose();
@@ -95,12 +108,19 @@ class _GoalsScreenState extends State<GoalsScreen>
   }
 }
 
+/// Reusable list widget for a single tab in [GoalsScreen].
+///
+/// Computes live progress for each [Goal] via [GoalProvider.computeProgress]
+/// and renders a [_GoalCard] per goal. Handles empty state with [emptyText].
 class _GoalsList extends StatelessWidget {
+  /// Goals to display in this list.
   final List<Goal> goals;
   final GoalProvider goalProvider;
   final TripProvider tripProvider;
   final CarProvider carProvider;
+  /// Message shown when [goals] is empty.
   final String emptyText;
+  /// `true` when displaying the archive tab (changes menu labels).
   final bool isArchive;
 
   const _GoalsList({
@@ -166,10 +186,20 @@ class _GoalsList extends StatelessWidget {
   }
 }
 
+/// Card widget for a single [Goal] showing type, car scope, progress bar,
+/// percentage, and optional deadline.
+///
+/// The progress bar colour is green when achieved, orange when ≥70%, or
+/// the theme primary colour otherwise. A "Splneno!" badge is shown when
+/// [GoalProgress.isAchieved] is `true`.
 class _GoalCard extends StatelessWidget {
+  /// The goal to display.
   final Goal goal;
+  /// Pre-computed progress snapshot for this goal.
   final GoalProgress progress;
+  /// Human-readable car name (or `'Všechna auta'` for global goals).
   final String carName;
+  /// `true` when the goal is in the archive tab.
   final bool isArchive;
   final VoidCallback onTap;
   final VoidCallback onToggle;
@@ -322,8 +352,13 @@ class _GoalCard extends StatelessWidget {
   }
 }
 
+/// Small inline chip showing the goal deadline date.
+///
+/// Turns red with a warning icon when the deadline has already passed.
 class _DeadlineChip extends StatelessWidget {
+  /// Date formatter shared across all chip instances.
   static final _fmt = DateFormat('d. M. yyyy');
+  /// The deadline date to display.
   final DateTime deadline;
   const _DeadlineChip(this.deadline);
 

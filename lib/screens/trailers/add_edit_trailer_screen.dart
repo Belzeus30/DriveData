@@ -4,7 +4,13 @@ import 'package:provider/provider.dart';
 import '../../models/trailer.dart';
 import '../../providers/trailer_provider.dart';
 
+/// Form screen for creating or editing a [Trailer].
+///
+/// Collects name, licence plate, year, max weight, next MOT date, and note.
+/// Pass [trailer] to open in edit mode. When in edit mode an AppBar delete
+/// button calls [_delete] with a confirmation dialog.
 class AddEditTrailerScreen extends StatefulWidget {
+  /// The trailer to edit, or `null` to create a new one.
   final Trailer? trailer;
   const AddEditTrailerScreen({super.key, this.trailer});
 
@@ -12,6 +18,7 @@ class AddEditTrailerScreen extends StatefulWidget {
   State<AddEditTrailerScreen> createState() => _AddEditTrailerScreenState();
 }
 
+/// State for [AddEditTrailerScreen].
 class _AddEditTrailerScreenState extends State<AddEditTrailerScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
@@ -21,8 +28,10 @@ class _AddEditTrailerScreenState extends State<AddEditTrailerScreen> {
   final _noteCtrl = TextEditingController();
   DateTime? _nextTechDate;
 
+  /// `true` when editing an existing trailer.
   bool get isEditing => widget.trailer != null;
 
+  /// Populates text controllers and [_nextTechDate] from [widget.trailer].
   @override
   void initState() {
     super.initState();
@@ -47,6 +56,8 @@ class _AddEditTrailerScreenState extends State<AddEditTrailerScreen> {
     super.dispose();
   }
 
+  /// Validates form; calls [TrailerProvider.updateTrailer] or
+  /// [TrailerProvider.addTrailer] then pops on success.
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     final provider = context.read<TrailerProvider>();
@@ -80,6 +91,8 @@ class _AddEditTrailerScreenState extends State<AddEditTrailerScreen> {
     if (mounted) Navigator.pop(context);
   }
 
+  /// Shows a confirmation dialog and deletes the trailer via
+  /// [TrailerProvider.deleteTrailer] if confirmed.
   Future<void> _delete() async {
     final confirmed = await showDialog<bool>(
       context: context,

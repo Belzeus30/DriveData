@@ -9,6 +9,19 @@ import '../../providers/service_provider.dart';
 import '../../providers/trip_provider.dart';
 import '../settings/settings_screen.dart';
 
+/// Analytics dashboard screen.
+///
+/// Aggregates driving behaviour and cost metrics from [TripProvider],
+/// [ServiceProvider], and [InsuranceProvider]. A car filter dropdown in the
+/// AppBar delegates to [TripProvider.setCarFilter] so that all sub-sections
+/// (overview cards, charts, TCO) react in sync.
+///
+/// Key sub-sections:
+/// - [_OverviewCards] — total km, trips, avg score, avg fuel.
+/// - Driving-score and fuel-consumption line trends (via [_LineChartWidget]).
+/// - Route-type fuel comparison (via [_RouteBarChart]).
+/// - [_DetailedScores] — per-skill averages (smoothness, anticipation, speeding).
+/// - [_TcoSection] — total cost of ownership breakdown.
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
 
@@ -16,7 +29,11 @@ class AnalyticsScreen extends StatefulWidget {
   State<AnalyticsScreen> createState() => _AnalyticsScreenState();
 }
 
+/// State for [AnalyticsScreen].
+///
+/// Holds [_selectedCarId] and synchronises it with [TripProvider.setCarFilter].
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
+  /// The car UUID currently selected in the filter dropdown, or `null` for all cars.
   String? _selectedCarId;
 
   @override
@@ -150,6 +167,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 // -----------------------------------------------------------------------
 // TCO — total cost of ownership
 
+/// Section widget showing the Total Cost of Ownership breakdown per category.
+///
+/// Computes monthly fuel costs from trip refuel events, pulls service and
+/// insurance costs from their respective providers, and presents cumulative
+/// totals in [_TcoCard] tiles plus a stacked-bar monthly history.
 class _TcoSection extends StatelessWidget {
   final TripProvider tripProvider;
   final ServiceProvider serviceProvider;
@@ -165,7 +187,7 @@ class _TcoSection extends StatelessWidget {
 
   static final _fmt = NumberFormat('#,##0', 'cs');
 
-  /// Returns a map of month key (YYYY-MM) to fuel (refuel) costs.
+  /// Returns a map of month key (`YYYY-MM`) to total fuel (refuel) costs.
   Map<String, double> _monthlyFuelCosts() {
     final result = <String, double>{};
     for (final t in tripProvider.filteredTrips) {
@@ -344,12 +366,16 @@ class _TcoSection extends StatelessWidget {
   }
 }
 
+/// Compact summary card for a single TCO cost category (fuel/service/insurance).
+///
+/// Displays the total amount formatted in Czech locale and a short [label].
 class _TcoCard extends StatelessWidget {
   final String label;
   final double value;
   final Color color;
   const _TcoCard(this.label, this.value, this.color);
 
+  /// Czech-locale number formatter (e.g. `12 345`).
   static final _fmt = NumberFormat('#,##0', 'cs');
 
   @override
@@ -377,6 +403,7 @@ class _TcoCard extends StatelessWidget {
   }
 }
 
+/// Small colour swatch + label used in chart legends.
 class _Legend extends StatelessWidget {
   final Color color;
   final String label;
@@ -397,6 +424,11 @@ class _Legend extends StatelessWidget {
 
 // -----------------------------------------------------------------------
 
+/// Responsive grid of summary stat cards at the top of the analytics screen.
+///
+/// Renders total distance, trip count, average driving score, and average
+/// fuel consumption. Uses [LayoutBuilder] to decide between a 2-column and
+/// 4-column grid based on available width.
 class _OverviewCards extends StatelessWidget {
   final TripProvider provider;
   final CarProvider carProvider;
@@ -462,6 +494,10 @@ class _OverviewCards extends StatelessWidget {
   }
 }
 
+/// A single coloured summary card inside [_OverviewCards].
+///
+/// Shows an [icon], a large [value] string (auto-scaled via [FittedBox]),
+/// and a [label].
 class _StatCard extends StatelessWidget {
   final String label;
   final String value;
@@ -501,6 +537,7 @@ class _StatCard extends StatelessWidget {
   }
 }
 
+/// Two-line title + subtitle widget placed above each chart.
 class _ChartTitle extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -523,6 +560,10 @@ class _ChartTitle extends StatelessWidget {
   }
 }
 
+/// Simple `fl_chart` [LineChart] wrapper.
+///
+/// Plots [data] as sequential Y values with automatic scaling between
+/// [minY]/[maxY]. Dots use [dotColor] and the line uses [color].
 class _LineChartWidget extends StatelessWidget {
   final List<double> data;
   final double? minY;
@@ -581,7 +622,12 @@ class _LineChartWidget extends StatelessWidget {
   }
 }
 
+/// Horizontal bar chart comparing average fuel consumption by route type.
+///
+/// Bars are proportionally sized relative to the maximum value in [data].
+/// Route type labels are localised from [_routeLabels].
 class _RouteBarChart extends StatelessWidget {
+  /// Map of route-type key (e.g. `'city'`) to average fuel consumption (l/100 km).
   final Map<String, double> data;
   const _RouteBarChart({required this.data});
 
@@ -639,8 +685,17 @@ class _RouteBarChart extends StatelessWidget {
   }
 }
 
+/// Detailed per-skill driving score section.
+///
+/// Computes per-trip averages for:
+/// - **Smoothness** — from [Trip.smoothnessScore].
+/// - **Anticipation** — from [Trip.anticipationScoreFor] (requires baseline).
+/// - **Speed compliance** — from [Trip.speedingScore].
+///
+/// Skipped entirely if no trips have both smoothness and speeding scores.
 class _DetailedScores extends StatelessWidget {
   final TripProvider provider;
+  /// Returns the per-car baseline fuel consumption for anticipation scoring.
   final double? Function(Trip) baselineFor;
   const _DetailedScores({required this.provider, required this.baselineFor});
 
@@ -690,8 +745,13 @@ class _DetailedScores extends StatelessWidget {
   }
 }
 
+/// A labelled horizontal progress bar for a single driving skill score out of 10.
+///
+/// Bar colour is green (≥8), orange (≥6), or red (<6).
 class _SkillBar extends StatelessWidget {
+  /// Human-readable skill label.
   final String label;
+  /// Score in range [0, 10].
   final double value;
   const _SkillBar(this.label, this.value);
 
