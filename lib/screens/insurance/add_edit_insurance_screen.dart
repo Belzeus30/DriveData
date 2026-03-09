@@ -78,6 +78,8 @@ class _AddEditInsuranceScreenState extends State<AddEditInsuranceScreen> {
   /// Defaults [_validTo] to one year from today when creating a new policy.
   @override
   void initState() {
+    super.initState();
+    final pol = widget.policy;
     _type = pol?.type ?? AppConstants.insuranceTypes.first;
     _carId = pol?.carId;
     _providerCtrl.text = pol?.provider ?? '';
