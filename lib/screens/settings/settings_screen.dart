@@ -37,7 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _import() async {
-    // Výběr souboru
+    // File picker
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json'],
@@ -46,7 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final path = result.files.single.path!;
 
     if (!mounted) return;
-    // Potvrzení — přepíše VŠECHNA data
+    // Confirmation dialog — will overwrite ALL existing data
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -75,7 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final message = await BackupService.instance.importBackup(path);
 
-      // Reload všech providerů
+      // Reload all providers after import
       if (mounted) {
         await Future.wait([
           context.read<CarProvider>().loadCars(),
@@ -178,7 +178,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const _SectionHeader('Vzhled'),
           const SizedBox(height: 8),
 
-          // Tmavý / světlý režim
+          // Dark / light theme toggle
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -217,7 +217,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 12),
 
-          // Výběr barvy
+          // Colour picker
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),

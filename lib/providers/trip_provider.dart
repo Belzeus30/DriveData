@@ -3,6 +3,17 @@ import 'package:uuid/uuid.dart';
 import '../models/trip.dart';
 import '../database/database_helper.dart';
 
+/// Manages the full list of [Trip] records and exposes aggregate analytics.
+///
+/// **Data flow:**
+/// - [trips] — full unfiltered list, used directly by TripsScreen's local filter.
+/// - [filteredTrips] — filtered by [selectedCarId], used by AnalyticsScreen.
+///
+/// Heavy analytics (fill-to-fill segments, driving score trend, etc.) are
+/// computed on demand from [trips] to keep the provider lightweight.
+///
+/// [baselinePerCar] and [latestOdometerPerCar] are lazy-cached maps that are
+/// invalidated whenever [trips] is reloaded or mutated.
 class TripProvider with ChangeNotifier {
   List<Trip> _trips = [];
   bool _isLoading = true;
@@ -126,14 +137,14 @@ class TripProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // --- ANALYTIKA ---
+  // --- ANALYTICS ---
 
   double? get averageFuelConsumption {
-    // Používá fill-to-fill přes všechna auta ve filtru
+    // Uses fill-to-fill average across all cars in the current filter
     if (_selectedCarId != null) {
       return fillToFillAvgConsumption(_selectedCarId!);
     }
-    // Pro všechna auta: reuse cached baseline map to avoid O(n²)
+    // For all cars: reuse cached baseline map to avoid O(n²)
     final values = baselinePerCar.values.whereType<double>().toList();
     if (values.isEmpty) return null;
     return values.reduce((a, b) => a + b) / values.length;
@@ -152,10 +163,10 @@ class TripProvider with ChangeNotifier {
     return totalCost / totalKilometers;
   }
 
-  // --- FILL-TO-FILL SPOTŘEBA ---
+  // --- FILL-TO-FILL CONSUMPTION ---
 
-  /// Fill-to-fill segmenty pro dané auto (v l/100km).
-  /// Každý segment = úplné tankovaní → úplné tankovaní.
+  /// Fill-to-fill consumption segments for a given car (l/100 km).
+  /// Each segment spans two consecutive full-tank refuels.
   List<double> fillToFillSegments(String carId) {
     final carTrips = _trips
         .where((t) => t.carId == carId)
@@ -182,7 +193,8 @@ class TripProvider with ChangeNotifier {
     return segments;
   }
 
-  /// Průměrná spotřeba z fill-to-fill segmentů (l/100km), nebo null.
+  /// Average fill-to-fill consumption in l/100 km, or `null` when
+  /// insufficient data is available.
   double? fillToFillAvgConsumption(String carId) {
     final segs = fillToFillSegments(carId);
     if (segs.isEmpty) return null;
@@ -200,7 +212,12 @@ class TripProvider with ChangeNotifier {
     return _baselinePerCarCache!;
   }
 
-  /// Trend skóre s volitelnou baseline (pro předvídavost)
+  /// Driving score trend, optionally weighted with an anticipation baseline.
+  ///
+  /// [lastN] controls how many recent trips to include.
+  /// [baselineFor] is an optional function that maps a [Trip] to its car's
+  /// fill-to-fill baseline; when supplied, the anticipation sub-score is
+  /// included in the overall score.
   List<double> getDrivingScoreTrend(
       {int lastN = 20, double? Function(Trip)? baselineFor}) {
     return filteredTrips
@@ -214,7 +231,7 @@ class TripProvider with ChangeNotifier {
         .toList();
   }
 
-  /// Průměrné skóre s volitelnou baseline
+  /// Average driving score with an optional anticipation baseline.
   double? averageDrivingScoreWith({double? Function(Trip)? baselineFor}) {
     final scores = filteredTrips
         .map((t) => baselineFor != null
@@ -226,7 +243,7 @@ class TripProvider with ChangeNotifier {
     return scores.reduce((a, b) => a + b) / scores.length;
   }
 
-  /// Fill-to-fill segmenty (trend) pro aktuální filtr auta.
+  /// Fill-to-fill consumption trend for the currently selected car filter.
   List<double> getFuelConsumptionTrend({int lastN = 20}) {
     final carId = _selectedCarId;
     if (carId == null) return [];
@@ -234,9 +251,11 @@ class TripProvider with ChangeNotifier {
     return segs.length > lastN ? segs.sublist(segs.length - lastN) : segs;
   }
 
-  /// Průměrná spotřeba dle typu trasy — aproximace přes fill-to-fill segmenty.
-  /// Pozn.: přesné rozdělení dle trasy při fill-to-fill není možné;
-  /// vrací vážený průměr pro každý typ trasy z jizd, kde bylo natankované.
+  /// Average fuel consumption grouped by route type.
+  ///
+  /// This is an approximation: the exact fill-to-fill split per route type is
+  /// not possible, so it returns a weighted average per route type across all
+  /// trips where fuel was added.
   Map<String, double> get consumptionByRouteType {
     final sums = <String, double>{};
     final counts = <String, int>{};

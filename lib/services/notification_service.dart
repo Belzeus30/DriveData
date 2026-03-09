@@ -46,7 +46,7 @@ class NotificationService {
   Future<void> init() async {
     if (_initialized) return;
 
-    // Notifikace fungují pouze na Android/iOS; desktop platformy přeskočíme
+    // Notifications only work on Android / iOS; skip all other platforms
     if (!Platform.isAndroid && !Platform.isIOS) {
       _initialized = true;
       return;

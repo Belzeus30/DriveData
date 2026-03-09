@@ -57,7 +57,7 @@ class TrailersScreen extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             children: [
-              // --- STK UPOZORNĚNÍ ---
+              // --- MOT REMINDERS ---
               if (reminders.isNotEmpty) ...[
                 Text(
                   '⚠️ Vyžadují pozornost',
@@ -75,7 +75,7 @@ class TrailersScreen extends StatelessWidget {
                 const Divider(height: 24),
               ],
 
-              // --- OSTATNÍ VOZÍKY ---
+              // --- OTHER TRAILERS ---
               if (trailers.any((t) => !reminderIds.contains(t.id))) ...[
                 Text(
                   '🔗 Vozíky',

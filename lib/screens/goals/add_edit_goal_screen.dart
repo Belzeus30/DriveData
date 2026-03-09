@@ -77,7 +77,7 @@ class _AddEditGoalScreenState extends State<AddEditGoalScreen> {
             child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Typ cíle
+            // Goal type
             Text('Typ cíle',
                 style: Theme.of(context)
                     .textTheme
@@ -98,7 +98,7 @@ class _AddEditGoalScreenState extends State<AddEditGoalScreen> {
               }).toList(),
             ),
             const SizedBox(height: 20),
-            // Cílová hodnota
+            // Target value
             TextFormField(
               controller: _targetCtrl,
               decoration: InputDecoration(
@@ -111,7 +111,7 @@ class _AddEditGoalScreenState extends State<AddEditGoalScreen> {
                   double.tryParse(v ?? '') == null ? 'Povinné' : null,
             ),
             const SizedBox(height: 12),
-            // Auto (volitelné)
+            // Car (optional)
             DropdownButtonFormField<String?>(
               initialValue: _carId,
               decoration: const InputDecoration(
@@ -153,7 +153,7 @@ class _AddEditGoalScreenState extends State<AddEditGoalScreen> {
             FilledButton(onPressed: _save, child: Text(isEditing ? 'Uložit změny' : 'Přidat cíl')),
 
             const SizedBox(height: 16),
-            // Nápověda
+            // Hint card
             if (!isEditing) _HintCard(goalType: _goalType),
           ],
         ),

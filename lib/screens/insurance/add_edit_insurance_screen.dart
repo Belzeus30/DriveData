@@ -187,7 +187,7 @@ class _AddEditInsuranceScreenState extends State<AddEditInsuranceScreen> {
               ),
             ),
 
-            // 2. ZÁKLADNÍ INFO
+            // 2. BASIC INFO
             _SectionCard(
               title: 'Základní informace',
               child: Column(
@@ -309,7 +309,7 @@ class _AddEditInsuranceScreenState extends State<AddEditInsuranceScreen> {
               ),
             ),
 
-            // 4. ROZSAH KRYTÍ (pouze cestovní)
+            // 4. COVERAGE SCOPE (travel policies only)
             if (isTravel)
               _SectionCard(
                 title: 'Rozsah krytí',
@@ -376,7 +376,7 @@ class _AddEditInsuranceScreenState extends State<AddEditInsuranceScreen> {
                 ),
               ),
 
-            // 5. PŘÍLOHA
+            // 5. ATTACHMENT
             _SectionCard(
               title: 'Doklad / příloha',
               child: _attachmentPath != null
@@ -393,7 +393,7 @@ class _AddEditInsuranceScreenState extends State<AddEditInsuranceScreen> {
                     ),
             ),
 
-            // ULOŽIT
+            // SAVE
             const SizedBox(height: 8),
             FilledButton.icon(
               icon: _isSaving

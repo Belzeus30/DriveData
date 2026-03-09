@@ -10,7 +10,7 @@ import 'add_edit_insurance_screen.dart';
 import 'travel_insurance_info_screen.dart';
 import '../settings/settings_screen.dart';
 
-/// Plná obrazovka Pojistky — vlastní Scaffold pro použití v hlavní navigaci.
+/// Insurance screen — a full-screen Scaffold used in the main navigation.
 class InsurancesScreen extends StatelessWidget {
   const InsurancesScreen({super.key});
 
@@ -41,7 +41,7 @@ class InsurancesScreen extends StatelessWidget {
   }
 }
 
-/// Obsah záložky Pojistky — seznam pojistných smluv + dálniční známky.
+/// Insurance tab content — list of insurance policies and vignettes.
 class InsurancesContent extends StatelessWidget {
   const InsurancesContent({super.key});
 
@@ -87,7 +87,7 @@ class InsurancesContent extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       children: [
-        // ---- UPOZORNĚNÍ ----
+        // ---- REMINDERS ----
         if (reminders.isNotEmpty) ...[
           Text('⚠️ Vyžadují pozornost',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
@@ -107,7 +107,7 @@ class InsurancesContent extends StatelessWidget {
           const Divider(height: 24),
         ],
 
-        // ---- AKTIVNÍ ----
+        // ---- ACTIVE ----
         if (policies.any((p) => p.isActive && !reminderIds.contains(p.id))) ...[
           Text('✅ Aktivní pojistky',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
@@ -124,7 +124,7 @@ class InsurancesContent extends StatelessWidget {
                         : null,                  )),
         ],
 
-        // ---- PROPADLÉ ----
+        // ---- EXPIRED ----
         if (policies.any((p) => p.isExpired)) ...[
           const SizedBox(height: 8),
           Text('🗄️ Prošlé',

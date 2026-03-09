@@ -7,6 +7,15 @@ import '../models/goal.dart';
 import '../models/insurance_policy.dart';
 import '../models/trailer.dart';
 
+/// SQLite database helper — singleton wrapper around the `sqflite` database.
+///
+/// **Tables:** `cars`, `trips`, `service_records`, `goals`,
+/// `insurance_policies`, `trailers`.
+///
+/// **Schema version:** 10 (see [_upgradeDB] for migration history).
+/// All migrations are additive (ALTER TABLE or CREATE TABLE); a full
+/// drop-and-recreate is only performed for upgrades from v1, which predated
+/// `service_records` and `goals`.
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
@@ -28,52 +37,52 @@ class DatabaseHelper {
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      // V1 nemělo service_records ani goals — zrekonstruujeme vše od začátku
+      // v1 had no service_records or goals — safest to recreate everything
       await db.execute('DROP TABLE IF EXISTS trips');
       await db.execute('DROP TABLE IF EXISTS service_records');
       await db.execute('DROP TABLE IF EXISTS goals');
       await db.execute('DROP TABLE IF EXISTS cars');
       await _createDB(db, newVersion);
-      return; // _createDB již obsahuje všechny sloupce
+      return; // _createDB already has all columns
     }
     if (oldVersion < 3) {
-      // V3: přidáno pole typicalConsumption na auto
+      // v3: added typicalConsumption to cars
       await db.execute(
           'ALTER TABLE cars ADD COLUMN typicalConsumption REAL');
     }
     if (oldVersion < 4) {
-      // V4: přidána upozornění na příští servis
+      // v4: added next-service reminder fields to service_records
       await db.execute(
           'ALTER TABLE service_records ADD COLUMN nextDueDate TEXT');
       await db.execute(
           'ALTER TABLE service_records ADD COLUMN nextDueOdometer REAL');
     }
     if (oldVersion < 5) {
-      // V5: fill-to-fill spotřeba — přidáno fullTank na jízdy
+      // v5: fill-to-fill consumption — added fullTank flag to trips
       await db.execute(
           'ALTER TABLE trips ADD COLUMN fullTank INTEGER NOT NULL DEFAULT 0');
     }
     if (oldVersion < 6) {
-      // V6: tabulka pojištění a dokladů
+      // v6: insurance & documents table
       await _createInsurancePoliciesTable(db);
     }
     if (oldVersion < 7) {
-      // V7: příloha (PDF / foto) k pojistce
+      // v7: attachment (PDF / photo) on insurance policies
       await db.execute(
           'ALTER TABLE insurance_policies ADD COLUMN attachmentPath TEXT');
     }
     if (oldVersion < 8) {
-      // V8: spotřeba z palubního počítače
+      // v8: on-board computer consumption reading on trips
       await db.execute(
           'ALTER TABLE trips ADD COLUMN tripComputerConsumption REAL');
     }
     if (oldVersion < 9) {
-      // V9: příloha k servisnímu záznamu (faktura, fotka...)
+      // v9: attachment (invoice / photo) on service records
       await db.execute(
           'ALTER TABLE service_records ADD COLUMN attachmentPath TEXT');
     }
     if (oldVersion < 10) {
-      // V10: přívěsy / vozíky + vazba na jízdu
+      // v10: trailers table + trailerId foreign key on trips
       await _createTrailersTable(db);
       await db.execute(
           'ALTER TABLE trips ADD COLUMN trailerId TEXT');
@@ -395,7 +404,7 @@ class DatabaseHelper {
     final db = await database;
     List<Map<String, dynamic>> maps;
     if (carId != null) {
-      // Vrátí pro konkrétní auto + osobní (carId IS NULL)
+      // Returns policies for a specific car plus personal policies (carId IS NULL)
       maps = await db.rawQuery(
           'SELECT * FROM insurance_policies WHERE carId = ? OR carId IS NULL ORDER BY validTo ASC',
           [carId]);
@@ -440,7 +449,7 @@ class DatabaseHelper {
 
   Future<int> deleteTrailer(String id) async {
     final db = await database;
-    // Odvaž jizdy od vozíku (nemazt je)
+    // Detach trips from the trailer without deleting them
     await db.execute(
         'UPDATE trips SET trailerId = NULL WHERE trailerId = ?', [id]);
     return await db.delete('trailers', where: 'id = ?', whereArgs: [id]);

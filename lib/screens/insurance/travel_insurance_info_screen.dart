@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Informační obrazovka o cestovním pojištění — co jednotlivé kategorie znamenají,
-/// na co si dát pozor a kde hledat pomoc v nouzi.
+/// Informational screen explaining travel insurance — what each coverage
+/// category means, what to watch out for and where to get help in an emergency.
 class TravelInsuranceInfoScreen extends StatelessWidget {
   const TravelInsuranceInfoScreen({super.key});
 
@@ -18,7 +18,7 @@ class TravelInsuranceInfoScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // ---- ÚVOD ----
+          // ---- INTRO ----
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -42,7 +42,7 @@ class TravelInsuranceInfoScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // ---- KARTY KRYTÍ ----
+          // ---- COVERAGE CARDS ----
           _CoverageCard(
             icon: '🏥',
             color: Colors.red.shade100,
@@ -163,7 +163,7 @@ class TravelInsuranceInfoScreen extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // ---- SROVNÁNÍ CEN ----
+          // ---- PRICE COMPARISON ----
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -192,7 +192,7 @@ class TravelInsuranceInfoScreen extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // ---- NEJČASTĚJŠÍ CHYBY ----
+          // ---- MOST COMMON MISTAKES ----
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

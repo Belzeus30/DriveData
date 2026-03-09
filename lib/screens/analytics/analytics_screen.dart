@@ -85,11 +85,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // --- PŘEHLEDOVÉ KARTY ---
+            // --- OVERVIEW CARDS ---
             _OverviewCards(provider: tripProvider, carProvider: carProvider, baselineFor: baselineFor),
             const SizedBox(height: 24),
 
-            // --- TREND SKÓRE ---
+            // --- SCORE TREND ---
             if (scoreTrend.length >= 2) ...[
               _ChartTitle('Trend skóre řidiče', 'Posledních ${scoreTrend.length} jízd'),
               const SizedBox(height: 8),
@@ -106,7 +106,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               const SizedBox(height: 24),
             ],
 
-            // --- TREND SPOTŘEBY ---
+            // --- CONSUMPTION TREND ---
             if (fuelTrend.length >= 2) ...[
               _ChartTitle('Trend spotřeby paliva', 'l/100 km · posledních ${fuelTrend.length} tankování'),
               const SizedBox(height: 8),
@@ -121,7 +121,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               const SizedBox(height: 24),
             ],
 
-            // --- SPOTŘEBA DLE TRASY ---
+            // --- CONSUMPTION BY ROUTE ---
             if (byRoute.isNotEmpty) ...[
               const _ChartTitle('Průměrná spotřeba dle trasy', 'l/100 km'),
               const SizedBox(height: 8),
@@ -129,11 +129,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               const SizedBox(height: 24),
             ],
 
-            // --- DETAILNÍ SKÓRE ---
+            // --- DETAILED SCORES ---
             _DetailedScores(provider: tripProvider, baselineFor: baselineFor),
             const SizedBox(height: 32),
 
-            // --- CELKOVÉ NÁKLADY (TCO) ---
+            // --- TOTAL COST OF OWNERSHIP (TCO) ---
             _TcoSection(
               tripProvider: tripProvider,
               serviceProvider: serviceProvider,
@@ -148,7 +148,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 }
 
 // -----------------------------------------------------------------------
-// TCO — celkové n\u00e1klady na auto
+// TCO — total cost of ownership
 
 class _TcoSection extends StatelessWidget {
   final TripProvider tripProvider;
@@ -165,7 +165,7 @@ class _TcoSection extends StatelessWidget {
 
   static final _fmt = NumberFormat('#,##0', 'cs');
 
-  /// Vrací mapu m\u011bs\u00edce ('2025-01') → n\u00e1klady za j\u00edzdy (palivo)
+  /// Returns a map of month key (YYYY-MM) to fuel (refuel) costs.
   Map<String, double> _monthlyFuelCosts() {
     final result = <String, double>{};
     for (final t in tripProvider.filteredTrips) {
@@ -177,7 +177,7 @@ class _TcoSection extends StatelessWidget {
     return result;
   }
 
-  /// Vrací mapu m\u011bs\u00edce → n\u00e1klady za servis
+  /// Returns a map of month key to service costs.
   Map<String, double> _monthlyServiceCosts() {
     final result = <String, double>{};
     final records = selectedCarId == null
@@ -647,7 +647,7 @@ class _DetailedScores extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final trips = provider.filteredTrips;
-    // pročistí trip, které mají aspoň smoothness + speeding
+    // filter trips that have at least smoothness + speeding scores
     final smoothSpeedScored = trips
         .where((t) => t.smoothnessScore != null && t.speedingScore != null)
         .toList();
@@ -660,7 +660,7 @@ class _DetailedScores extends StatelessWidget {
         smoothSpeedScored.fold(0.0, (s, t) => s + t.speedingScore!) /
             smoothSpeedScored.length;
 
-    // anticipation jen pro tripy s dostupným baseline a spotřebou
+    // anticipation only for trips with an available baseline and consumption
     final anticipationScores = trips.map((t) {
       return t.anticipationScoreFor(baselineFor(t));
     }).whereType<double>().toList();

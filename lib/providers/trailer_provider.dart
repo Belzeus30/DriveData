@@ -5,6 +5,14 @@ import '../models/trailer.dart';
 import '../services/notification_service.dart';
 import '../utils/constants.dart';
 
+/// Manages [Trailer] records and MOT reminder logic.
+///
+/// [getReminders] returns trailers whose MOT date is overdue or falls within
+/// [AppConstants.trailerTechReminderDays] from today.
+///
+/// MOT (roadworthiness check) notifications are automatically scheduled or
+/// rescheduled whenever a trailer is added or updated, and cancelled when
+/// a trailer is deleted.
 class TrailerProvider with ChangeNotifier {
   List<Trailer> _trailers = [];
   Map<String, Trailer> _trailerMap = {};
@@ -49,7 +57,7 @@ class TrailerProvider with ChangeNotifier {
     _trailerMap[trailer.id] = trailer;
     _trailers.sort((a, b) => a.name.compareTo(b.name));
     notifyListeners();
-    // Naplánuj notifikaci pokud je STK zadáno
+    // Schedule MOT notification if a due date is set
     if (nextTechDate != null) {
       await NotificationService.instance.scheduleTrailerTechReminder(trailer);
     }
@@ -80,7 +88,7 @@ class TrailerProvider with ChangeNotifier {
 
   // --------------------------------------------------------------- REMINDERS
 
-  /// Vrátí vozíky s aktivním STK upozorněním (propadlé nebo brzy vyprší).
+  /// Returns trailers with an active MOT reminder (overdue or due soon).
   List<({Trailer trailer, bool isOverdue, bool isDueSoon})> getReminders() {
     final now = DateTime.now();
     final result = <({Trailer trailer, bool isOverdue, bool isDueSoon})>[];

@@ -193,7 +193,7 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               validator: (v) {
-                if (v == null || v.isEmpty) return null; // volitelné
+                if (v == null || v.isEmpty) return null; // optional
                 return double.tryParse(v) == null ? 'Neplatná hodnota' : null;
               },
             ),

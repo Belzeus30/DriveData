@@ -4,6 +4,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 const _kThemeMode = 'theme_mode';
 const _kSeedColor = 'seed_color';
 
+/// Manages the app's visual theme: [ThemeMode] and seed colour.
+///
+/// Settings are persisted to [SharedPreferences] under the keys
+/// `theme_mode` (int index of [ThemeMode]) and `seed_color` (ARGB int).
+///
+/// [availableColors] contains the 7 preset seed colours; their user-visible
+/// labels are in [colorNames] (kept in matching order).
+///
+/// [buildTheme] constructs a Material 3 [ThemeData] from the active seed
+/// colour and the supplied brightness, with app-specific overrides for
+/// cards, app-bars, chips, inputs and buttons.
 class ThemeProvider with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   Color _seedColor = const Color(0xFF1565C0);
@@ -12,23 +23,23 @@ class ThemeProvider with ChangeNotifier {
   Color get seedColor => _seedColor;
 
   static const List<Color> availableColors = [
-    Color(0xFF1565C0), // Modrá (výchozí)
-    Color(0xFF2E7D32), // Zelená
-    Color(0xFFC62828), // Červená
-    Color(0xFF6A1B9A), // Fialová
-    Color(0xFFE65100), // Oranžová
-    Color(0xFF00695C), // Tyrkysová
-    Color(0xFF37474F), // Šedá
+    Color(0xFF1565C0), // Blue (default)
+    Color(0xFF2E7D32), // Green
+    Color(0xFFC62828), // Red
+    Color(0xFF6A1B9A), // Purple
+    Color(0xFFE65100), // Orange
+    Color(0xFF00695C), // Teal
+    Color(0xFF37474F), // Grey
   ];
 
   static const List<String> colorNames = [
-    'Modrá',
-    'Zelená',
-    'Červená',
-    'Fialová',
-    'Oranžová',
-    'Tyrkysová',
-    'Šedá',
+    'Blue',
+    'Green',
+    'Red',
+    'Purple',
+    'Orange',
+    'Teal',
+    'Grey',
   ];
 
   Future<void> load() async {

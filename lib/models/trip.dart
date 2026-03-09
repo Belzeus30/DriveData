@@ -1,46 +1,57 @@
 const _tripCopyWithUnset = Object();
 
+/// Data model for a single trip.
+///
+/// Holds all recorded measurements (odometer readings, fuel, speed, weather, etc.)
+/// as well as computed properties (distance, consumption, driver score).
+///
+/// **Driver score** is composed of three sub-scores:
+/// 1. [smoothnessScore] — average-to-max speed ratio, corrected for traffic density
+/// 2. [anticipationScoreFor] — fuel consumption vs. the car's historical baseline, corrected for traffic
+/// 3. [speedingScore] — max speed vs. the legal limit for the route type (trailer limits applied when applicable)
+///
+/// The model is immutable; use [copyWith] to produce modified copies.
 class Trip {
   final String id;
   final String carId;
   final DateTime date;
 
-  // --- VZDÁLENOST ---
-  final double odometerStart;
-  final double odometerEnd;
+  // --- ODOMETER ---
+  final double odometerStart; // km at trip start
+  final double odometerEnd;   // km at trip end
 
-  // --- PALIVO ---
-  final double? fuelAdded;
-  final double? fuelPricePerLiter;
-  final double? fullTankCost;
+  // --- FUEL ---
+  final double? fuelAdded;          // litres added at refuel (null if not refuelled)
+  final double? fuelPricePerLiter;  // price per litre in CZK
+  final double? fullTankCost;       // total refuel cost in CZK
 
-  // --- JÍZDA ---
-  final int drivingDuration;
-  final String routeType;
-  final String weatherCondition;
-  final int trafficLevel;
-  final double? maxSpeed;
-  final double? averageSpeed;
+  // --- TRIP DETAILS ---
+  final int drivingDuration;       // driving time in minutes
+  final String routeType;          // 'city' | 'highway' | 'mixed' | 'offroad'
+  final String weatherCondition;   // 'clear' | 'rain' | 'snow' | 'fog' | 'wind' | 'hot'
+  final int trafficLevel;          // 1 (free) … 5 (traffic jam)
+  final double? maxSpeed;          // maximum speed recorded during the trip (km/h)
+  final double? averageSpeed;      // average speed from the trip computer (km/h)
 
-  // --- KLIMATIZACE / KOMFORT ---
-  final bool acUsed;
-  final int? outsideTemp;
+  // --- COMFORT ---
+  final bool acUsed;     // true = air conditioning was running
+  final int? outsideTemp; // outside temperature in °C
 
-  // --- SPOTŘEBA Z PALUBÁKU ---
-  /// Spotřeba naměřená palubním počítačem (l/100 km) — přímý odečet po jízdě
+  /// Fuel consumption read directly from the on-board computer (l/100 km).
+  /// Preferred over the calculated value; see [fuelConsumption].
   final double? tripComputerConsumption;
 
-  // --- TANKOVÁNÍ DO PLNA ---
-  /// true = při tomto záznamu bylo tankováno DO PLNA (pro fill-to-fill výpočet)
+  /// `true` when the tank was filled to the brim at this refuel.
+  /// Required for the fill-to-fill average consumption calculation.
   final bool fullTank;
 
-  // --- VOZÍK ---
-  /// ID přívěsu/vozíku, pokud byl při jízdě připojen (null = jela bez vozíku)
+  /// ID of the attached trailer/caravan, or `null` when towing nothing.
+  /// When set, [speedingScore] applies the lower CZ legal speed limits.
   final String? trailerId;
 
-  // --- PŘIDANÉ HODNOTY ---
-  final String? startLocation;
-  final String? endLocation;
+  // --- OPTIONAL METADATA ---
+  final String? startLocation; // free-text departure label
+  final String? endLocation;   // free-text destination label
   final String? note;
 
   Trip({
@@ -68,26 +79,33 @@ class Trip {
     this.note,
   });
 
-  // --- VYPOČÍTANÉ VLASTNOSTI ---
+  // --- COMPUTED PROPERTIES ---
 
-  /// Vzdálenost jízdy v km
+  /// Trip distance in km (odometerEnd − odometerStart).
   double get distance => odometerEnd - odometerStart;
 
-  /// Spotřeba pro tuto jízdu — preferuje přímý odečet z palubního počítače;
-  /// pokud není zadán, odhadne z natankovaného paliva (nepřesné).
+  /// Fuel consumption in l/100 km.
+  ///
+  /// Prefers the on-board computer reading ([tripComputerConsumption]).
+  /// Falls back to an estimate from litres added ÷ distance when no direct
+  /// reading is available (less accurate because it includes previous trips
+  /// between full-tank events).
   double? get fuelConsumption {
     if (tripComputerConsumption != null) return tripComputerConsumption;
     if (fuelAdded == null || distance <= 0) return null;
     return (fuelAdded! / distance) * 100;
   }
 
-  /// Náklady na km (Kč/km)
+  /// Cost per kilometre in CZK/km.
   double? get costPerKm {
     if (fullTankCost == null || distance <= 0) return null;
     return fullTankCost! / distance;
   }
 
-  /// Efektivní průměrná rychlost – ze zadaného pole, nebo dopočítaná z km/min
+  /// Effective average speed in km/h.
+  ///
+  /// Uses the recorded [averageSpeed] if available; otherwise derives it from
+  /// distance ÷ duration (km ÷ minutes × 60).
   double? get effectiveAvgSpeed {
     if (averageSpeed != null && averageSpeed! > 0) return averageSpeed;
     if (drivingDuration > 0 && distance > 0) {
@@ -96,10 +114,12 @@ class Trip {
     return null;
   }
 
-  /// Plynulost jízdy (1–10): průměrná / maximální rychlost
-  /// Čím vyšší poměr avg/max, tím plynulejší jízda (méně prudkých akcelerací).
-  /// Hustota provozu kompenzuje nevyhnutelný stop-go efekt:
-  ///   1=volno +0.0, 2=mírný +0.5, 3=střední +1.2, 4=hustý +2.0, 5=zácpa +3.0
+  /// Driving smoothness score (1–10): average speed ÷ max speed × 10.
+  ///
+  /// A higher avg/max ratio means fewer harsh accelerations and a smoother
+  /// driving style.  A traffic-density bonus compensates for unavoidable
+  /// stop-and-go in congestion:
+  ///   level 1 (free) +0.0 · level 2 +0.5 · level 3 +1.2 · level 4 +2.0 · level 5 (jam) +3.0
   static const _trafficSmoothnessBonus = [0.0, 0.0, 0.5, 1.2, 2.0, 3.0];
 
   double? get smoothnessScore {
@@ -112,8 +132,8 @@ class Trip {
     return (base + bonus).clamp(1.0, 10.0);
   }
 
-  /// Dodržování limitů (1–10): max rychlost vs. typický limit pro typ trasy
-  /// Každých 8 km/h nad limit = −1 bod
+  /// Speed-compliance score (1–10): max recorded speed vs. the legal limit
+  /// for the route type.  Every 8 km/h over the limit deducts 1 point.
   static const _routeLimits = {
     'city': 50.0,
     'highway': 130.0,
@@ -121,7 +141,8 @@ class Trip {
     'offroad': 40.0,
   };
 
-  /// Limity s vozíkem: CZ zákon — max 80 km/h na dálnici/silnici, 50 ve městě, 30 v terénu
+  /// Reduced limits when towing (CZ law): max 80 km/h on motorways/roads,
+  /// 50 km/h in urban areas, 30 km/h off-road.
   static const _routeLimitsWithTrailer = {
     'city': 50.0,
     'highway': 80.0,
@@ -138,10 +159,15 @@ class Trip {
     return (10.0 - over / 8.0).clamp(1.0, 10.0);
   }
 
-  /// Předvídavost (1–10): skutečná spotřeba vs. baseline
-  /// baseline = historický průměr auta (v4) nebo typická spotřeba z TP.
-  /// Hustota provozu zvyšuje toleranci (+5.5 % baseline na stupeň nad 1):
-  ///   1=volno ×1.00, 2=mírný ×1.055, 3=střední ×1.11, 4=hustý ×1.165, 5=zácpa ×1.22
+  /// Anticipation / eco-driving score (1–10): actual consumption vs. baseline.
+  ///
+  /// [baseline] is either the fill-to-fill historical average for the car
+  /// (computed by [TripProvider.fillToFillAvgConsumption]) or the typical
+  /// consumption from the car's specs sheet as a fallback.
+  ///
+  /// A traffic-density tolerance is applied (+5.5 % per level above 1)
+  /// because stop-and-go naturally raises fuel consumption:
+  ///   level 1 ×1.00 · level 2 ×1.055 · level 3 ×1.11 · level 4 ×1.165 · level 5 ×1.22
   double? anticipationScoreFor(double? baseline) {
     if (fuelConsumption == null || baseline == null || baseline <= 0) return null;
     final trafficMultiplier = 1.0 + (trafficLevel - 1) * 0.055;
@@ -149,7 +175,11 @@ class Trip {
     return (adjustedBaseline / fuelConsumption! * 8.5).clamp(1.0, 10.0);
   }
 
-  /// Celkové skóre: průměr všech 3 složek (požaduje baseline pro předvídavost)
+  /// Overall driving score (1–10): arithmetic mean of all available
+  /// sub-scores ([smoothnessScore], [anticipationScoreFor], [speedingScore]).
+  ///
+  /// [baseline] is passed to [anticipationScoreFor]; supply `null` to exclude
+  /// the anticipation component when no baseline is available yet.
   double? drivingScoreFor(double? baseline) {
     final scores = [
       smoothnessScore,
@@ -160,7 +190,8 @@ class Trip {
     return scores.reduce((a, b) => a + b) / scores.length;
   }
 
-  /// Celkové skóre bez předvídavosti (pro případy bez baseline)
+  /// Overall score without the anticipation component (used when no baseline
+  /// is available for a car).
   double? get drivingScore => drivingScoreFor(null);
 
   Map<String, dynamic> toMap() {

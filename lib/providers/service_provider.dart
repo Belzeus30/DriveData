@@ -6,6 +6,16 @@ import '../database/database_helper.dart';
 import '../services/notification_service.dart';
 import '../utils/constants.dart';
 
+/// Manages [ServiceRecord] entries and calculates upcoming service reminders.
+///
+/// [getReminders] checks each record against two independent thresholds:
+/// - **Date threshold** — how many days ahead to warn (per service type, from
+///   [AppConstants.serviceReminderDays])
+/// - **Odometer threshold** — how many km ahead to warn (per service type,
+///   from [AppConstants.serviceReminderKm])
+///
+/// A record is flagged `isOverdue` when either threshold has already been
+/// exceeded, and `isDueSoon` when either is within the warning window.
 class ServiceProvider with ChangeNotifier {
   List<ServiceRecord> _records = [];
   bool _isLoading = false;
@@ -68,7 +78,7 @@ class ServiceProvider with ChangeNotifier {
   }
 
   Future<void> deleteRecord(String id) async {
-    // Smaž přiloženou přílohu, pokud existuje
+    // Delete attachment file if present
     final record = _records.where((r) => r.id == id).firstOrNull;
     if (record?.attachmentPath != null) {
       final file = File(record!.attachmentPath!);
@@ -91,8 +101,8 @@ class ServiceProvider with ChangeNotifier {
     return result;
   }
 
-  /// Vrátí záznamy s aktivním upozorněním.
-  /// [currentOdometerPerCar] = mapa carId → aktuální km tachometru
+  /// Returns service records with an active reminder.
+  /// [currentOdometerPerCar] is a map of carId → current odometer reading (km).
   List<({ServiceRecord record, bool isOverdue, bool isDueSoon})>
       getReminders(Map<String, double> currentOdometerPerCar) {
     final now = DateTime.now();
@@ -103,7 +113,7 @@ class ServiceProvider with ChangeNotifier {
       if (r.nextDueDate == null && r.nextDueOdometer == null) continue;
       final currentKm = currentOdometerPerCar[r.carId] ?? r.odometer;
 
-      // Per-typ prahy upozornění
+      // Per-type reminder thresholds
       final reminderDays =
           AppConstants.serviceReminderDays[r.serviceType] ?? 30;
       final reminderKm =
@@ -129,7 +139,7 @@ class ServiceProvider with ChangeNotifier {
       }
     }
 
-    // řazeni: přejaté nejdříve
+    // Sort: overdue records first
     result.sort((a, b) => a.isOverdue == b.isOverdue ? 0 : a.isOverdue ? -1 : 1);
     return result;
   }

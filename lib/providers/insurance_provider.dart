@@ -6,6 +6,14 @@ import '../models/insurance_policy.dart';
 import '../utils/constants.dart';
 import '../services/notification_service.dart';
 
+/// Manages [InsurancePolicy] records and calculates expiry reminders.
+///
+/// [getReminders] returns policies that are already expired (`isOverdue`) or
+/// will expire within the per-type threshold defined in
+/// [AppConstants.insuranceReminderDays].
+///
+/// Cost helpers ([annualCostForCar], [monthlyCostForCar]) aggregate premiums
+/// for all active policies (vehicle-bound and personal) for a given car.
 class InsuranceProvider extends ChangeNotifier {
   final _db = DatabaseHelper.instance;
   final _uuid = const Uuid();
@@ -42,7 +50,7 @@ class InsuranceProvider extends ChangeNotifier {
   }
 
   Future<void> deletePolicy(String id) async {
-    // Smaž přiloženou přílohu, pokud existuje
+    // Delete attachment file if present
     final policy = _policies.where((p) => p.id == id).firstOrNull;
     if (policy?.attachmentPath != null) {
       final file = File(policy!.attachmentPath!);
@@ -56,7 +64,7 @@ class InsuranceProvider extends ChangeNotifier {
 
   // --------------------------------------------------------------- REMINDERS
 
-  /// Vrátí pojistky s aktivním upozorněním (propadlé nebo brzy vyprší).
+  /// Returns policies with an active reminder (expired or expiring soon).
   List<({InsurancePolicy policy, bool isOverdue, bool isDueSoon})>
       getReminders() {
     final now = DateTime.now();
@@ -82,13 +90,13 @@ class InsuranceProvider extends ChangeNotifier {
 
   // ----------------------------------------------------------- COST HELPERS
 
-  /// Celkové roční náklady na aktivní pojistky pro dané auto.
+  /// Total annual premium cost for all active policies associated with [carId].
   double annualCostForCar(String carId) {
     return _policies
         .where((p) => p.isActive && (p.carId == carId || p.carId == null))
         .fold(0.0, (sum, p) => sum + (p.costPerYear ?? 0));
   }
 
-  /// Měsíční náklady (roční / 12) pro dané auto.
+  /// Monthly cost estimate (annual cost ÷ 12) for the given car.
   double monthlyCostForCar(String carId) => annualCostForCar(carId) / 12;
 }

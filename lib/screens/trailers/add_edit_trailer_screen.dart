@@ -131,7 +131,7 @@ class _AddEditTrailerScreenState extends State<AddEditTrailerScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // --- ZÁKLADNÍ INFORMACE ---
+                // --- BASIC INFORMATION ---
                 _SectionHeader('Základní informace'),
                 const SizedBox(height: 8),
                 TextFormField(

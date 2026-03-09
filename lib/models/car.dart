@@ -1,16 +1,25 @@
 const _carCopyWithUnset = Object();
 
+/// Data model for a vehicle.
+///
+/// Stores the technical specifications entered by the user when adding a car.
+///
+/// [typicalConsumption] is an optional typical consumption from the owner's
+/// manual or on-board computer.  It acts as the initial baseline for
+/// [Trip.anticipationScoreFor] until enough fill-to-fill data is accumulated.
+///
+/// The model is immutable; use [copyWith] to produce modified copies.
 class Car {
   final String id;
-  final String make;       // Značka (Škoda, VW, BMW...)
-  final String model;      // Model (Octavia, Golf, 3er...)
-  final int year;          // Rok výroby
-  final String fuelType;   // Typ paliva (benzín, diesel, LPG, elektro)
-  final double tankCapacity; // Objem nádrže v litrech
-  final double engineVolume; // Objem motoru v litrech
-  final int enginePower;   // Výkon motoru v kW
-  final double? typicalConsumption; // Typická spotřeba z palubního počítače (l/100km)
-  final String? note;      // Poznámka
+  final String make;              // Brand (e.g. Škoda, VW, BMW)
+  final String model;             // Model name (e.g. Octavia, Golf)
+  final int year;                 // Year of manufacture
+  final String fuelType;          // 'Benzín' | 'Diesel' | 'LPG' | 'CNG' | 'Elektro' | 'Hybrid'
+  final double tankCapacity;      // Fuel tank capacity in litres
+  final double engineVolume;      // Engine displacement in litres
+  final int enginePower;          // Engine power in kW
+  final double? typicalConsumption; // Typical fuel consumption in l/100 km (from specs)
+  final String? note;
 
   Car({
     required this.id,

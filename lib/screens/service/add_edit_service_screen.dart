@@ -35,8 +35,9 @@ class _AddEditServiceScreenState extends State<AddEditServiceScreen> {
 
   bool get isEditing => widget.record != null;
 
-  /// Auto-vyplní nextDueDate na základě typu servisu a data záznamu.
-  /// Volá se při změně typu nebo data — pouze pokud uživatel ještě níač ručně nezadal.
+  /// Auto-fills nextDueDate based on the selected service type and record date.
+  /// Called when the type or date changes — only when the user has not already
+  /// entered a date manually.
   void _applySmartNextDue({bool force = false}) {
     if (!force && _nextDueDate != null) return;
     final months = AppConstants.serviceNextDueMonths[_serviceType];
@@ -64,7 +65,7 @@ class _AddEditServiceScreenState extends State<AddEditServiceScreen> {
     _nextDueDate = r?.nextDueDate;
     _attachmentPath = r?.attachmentPath;
     _originalAttachmentPath = r?.attachmentPath;
-    // Pro nový záznam auto-navrhni datum
+    // For new records, auto-suggest next due date
     if (!isEditing) _applySmartNextDue(force: true);
   }
 
@@ -75,7 +76,7 @@ class _AddEditServiceScreenState extends State<AddEditServiceScreen> {
     _providerCtrl.dispose();
     _noteCtrl.dispose();
     _nextOdometerCtrl.dispose();
-    // Smaž dočasnou přílohu pokud nebyla uložena
+    // Delete temp attachment if the user never saved the record
     if (_attachmentPath != null && _attachmentPath != _originalAttachmentPath) {
       final f = File(_attachmentPath!);
       if (f.existsSync()) f.deleteSync();
@@ -297,7 +298,7 @@ class _AddEditServiceScreenState extends State<AddEditServiceScreen> {
               maxLines: 3,
               maxLength: 500,
             ),
-            const SizedBox(height: 24),            // --- PŘÍLOHA ---
+            const SizedBox(height: 24),            // --- ATTACHMENT ---
             Text('Příloha (faktura, fotka)',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: Theme.of(context).colorScheme.primary)),
@@ -330,7 +331,7 @@ class _AddEditServiceScreenState extends State<AddEditServiceScreen> {
                 ),
                 onTap: () => OpenFilex.open(_attachmentPath!),
               ),
-            const SizedBox(height: 24),            // --- PŘÍSTÍ SERVIS ---
+            const SizedBox(height: 24),            // --- NEXT SERVICE ---
             Text('Příští servis (upozornění)',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: Theme.of(context).colorScheme.primary)),

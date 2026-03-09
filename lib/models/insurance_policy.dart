@@ -1,26 +1,41 @@
 const _insuranceCopyWithUnset = Object();
 
+/// Data model for an insurance policy.
+///
+/// Covers all common policy types:
+/// - `pov`           — mandatory third-party liability (Czech: povinné ručení)
+/// - `comprehensive` — comprehensive/collision cover (Czech: havarijní)
+/// - `vignette`      — motorway vignette
+/// - `travel`        — travel insurance; optional coverages stored in `covers*` fields
+/// - `other`         — any other policy
+///
+/// A policy can be tied to a specific vehicle ([carId] != null) or personal
+/// ([carId] == null, typically travel insurance).
+///
+/// Expiry reminders are triggered according to [AppConstants.insuranceReminderDays].
+///
+/// The model is immutable; use [copyWith] to produce modified copies.
 class InsurancePolicy {
   final String id;
-  final String? carId; // null = osobní pojistka (cestovní), ne vázaná na auto
-  final String type; // 'pov', 'comprehensive', 'vignette', 'travel', 'other'
-  final String provider; // název pojišťovny
+  final String? carId;         // null = personal policy (not vehicle-bound)
+  final String type;           // 'pov' | 'comprehensive' | 'vignette' | 'travel' | 'other'
+  final String provider;       // Insurance company name
   final String? policyNumber;
   final DateTime? validFrom;
   final DateTime validTo;
-  final double? costPerYear; // cena v Kč
-  final String? phone; // asistenční linka
+  final double? costPerYear;   // Annual premium in CZK
+  final String? phone;         // Emergency / assistance hotline
   final String? notes;
 
-  // Cestovní pojištění — volitelné
-  final bool coversMedical; // léčebné výlohy
-  final bool coversLuggage; // zavazadla
-  final bool coversDelay; // zpoždění / zmeškaný spoj
-  final bool coversLiability; // odpovědnost
-  final bool coversCancellation; // storno
-  final bool coversSports; // sportovní aktivity
-  final double? medicalLimitEur; // krytí léčebných výloh v EUR
-  final String? attachmentPath; // cesta k uloženému PDF / fotu dokladu
+  // --- TRAVEL INSURANCE OPTIONAL COVERAGES ---
+  final bool coversMedical;       // Medical expenses abroad
+  final bool coversLuggage;       // Luggage loss/damage
+  final bool coversDelay;         // Flight/connection delay
+  final bool coversLiability;     // Personal liability
+  final bool coversCancellation;  // Trip cancellation
+  final bool coversSports;        // Sporting activities
+  final double? medicalLimitEur;  // Medical expenses coverage limit in EUR
+  final String? attachmentPath;   // Local path to the policy PDF or photo
 
   InsurancePolicy({
     required this.id,
@@ -43,10 +58,11 @@ class InsurancePolicy {
     this.attachmentPath,
   });
 
+  /// `true` when the policy's end date has already passed.
   bool get isExpired => validTo.isBefore(DateTime.now());
   bool get isActive => !isExpired;
 
-  /// Zbývá dní do konce platnosti (záporné = již propadlá)
+  /// Days until expiry (negative = already expired).
   int get daysUntilExpiry =>
       validTo.difference(DateTime.now()).inDays;
 

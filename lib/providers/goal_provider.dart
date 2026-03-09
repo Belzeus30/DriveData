@@ -4,6 +4,13 @@ import '../models/goal.dart';
 import '../models/trip.dart';
 import '../database/database_helper.dart';
 
+/// Manages [Goal] records and computes live progress for each goal.
+///
+/// [computeProgress] runs a single pass over the supplied trip list and
+/// returns a [GoalProgress] value containing:
+/// - `current` — the current measured value (l/100 km, score, km, etc.)
+/// - `progress` — normalised 0.0–1.0 completion ratio
+/// - `isLowerBetter` — true for fuel/cost goals where a lower value is better
 class GoalProvider with ChangeNotifier {
   List<Goal> _goals = [];
   bool _isLoading = false;
@@ -65,8 +72,10 @@ class GoalProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Vypočítá aktuální hodnotu cíle na základě jízd.
-  /// Vrací hodnotu mezi 0.0 a 1.0 (progress) + aktuální hodnotu.
+  /// Computes the current progress for [goal] against [allTrips].
+  ///
+  /// If [goal.carId] is set, only trips for that car are considered;
+  /// otherwise all trips are used.
   GoalProgress computeProgress(Goal goal, List<Trip> allTrips) {
     final trips = goal.carId != null
         ? allTrips.where((t) => t.carId == goal.carId).toList()
@@ -74,8 +83,8 @@ class GoalProvider with ChangeNotifier {
 
     switch (goal.type) {
       case 'fuel':
-        // Cíl: snížit průměrnou spotřebu pod targetValue l/100km
-        // Vážený součet (SUM litrů / SUM km) — jeden průchod listem
+        // Goal: reduce average consumption below targetValue l/100 km
+        // Weighted sum (SUM litres / SUM km) — single pass
         var totalFuel = 0.0;
         var totalDist = 0.0;
         for (final t in trips) {
@@ -90,7 +99,7 @@ class GoalProvider with ChangeNotifier {
         return GoalProgress(current: avg, progress: progress, isLowerBetter: true);
 
       case 'score':
-        // Cíl: dosáhnout průměrného skóre targetValue
+        // Goal: reach an average driving score of targetValue
         final withScore = trips.where((t) => t.drivingScore != null).toList();
         if (withScore.isEmpty) return GoalProgress(current: null, progress: 0);
         final avg =
@@ -99,7 +108,7 @@ class GoalProvider with ChangeNotifier {
             current: avg, progress: (avg / goal.targetValue).clamp(0.0, 1.0));
 
       case 'km_month':
-        // Cíl: ujet alespoň targetValue km tento měsíc
+        // Goal: drive at least targetValue km in the current month
         final now = DateTime.now();
         final monthTrips = trips.where((t) =>
             t.date.year == now.year && t.date.month == now.month);
@@ -109,7 +118,7 @@ class GoalProvider with ChangeNotifier {
             progress: (km / goal.targetValue).clamp(0.0, 1.0));
 
       case 'cost_km':
-        // Cíl: udržet náklady pod targetValue Kč/km
+        // Goal: keep average cost below targetValue CZK/km
         final withCost = trips.where((t) => t.costPerKm != null).toList();
         if (withCost.isEmpty) return GoalProgress(current: null, progress: 0);
         final avg =
@@ -118,7 +127,7 @@ class GoalProvider with ChangeNotifier {
         return GoalProgress(current: avg, progress: progress, isLowerBetter: true);
 
       case 'trips_month':
-        // Cíl: zaznamenat alespoň targetValue jízd tento měsíc
+        // Goal: log at least targetValue trips in the current month
         final now = DateTime.now();
         final count = trips.where((t) =>
             t.date.year == now.year && t.date.month == now.month).length;

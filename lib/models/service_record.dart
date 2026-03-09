@@ -1,17 +1,30 @@
 const _serviceRecordUnset = Object();
 
+/// Data model for a single service record.
+///
+/// Captures one maintenance event (oil change, tyres, MOT, etc.) including
+/// cost, service provider and an optional file attachment (invoice or photo).
+///
+/// Reminders are driven by two independent thresholds:
+/// - [nextDueDate] — calendar date of the next service
+/// - [nextDueOdometer] — odometer reading at which service is next due
+///
+/// How far in advance to warn is configured per service type via
+/// [AppConstants.serviceReminderDays] and [AppConstants.serviceReminderKm].
+///
+/// The model is immutable; use [copyWith] to produce modified copies.
 class ServiceRecord {
   final String id;
   final String carId;
   final DateTime date;
-  final String serviceType;  // oil / tires / brakes / inspection / battery / other
-  final double odometer;     // Stav km při servisu
-  final double cost;         // Cena v Kč
-  final String? provider;   // Kde se servisovalo (autoservis, sám...)
+  final String serviceType;        // 'oil' | 'tires' | 'brakes' | 'inspection' | 'battery' | 'filters' | 'belts' | 'other'
+  final double odometer;           // Odometer reading at time of service (km)
+  final double cost;               // Service cost in CZK
+  final String? provider;          // Workshop name or 'DIY'
   final String? note;
-  final DateTime? nextDueDate;     // Kdy je příští servis (datum)
-  final double? nextDueOdometer;   // Kdy je příští servis (km)
-  final String? attachmentPath;    // Cesta k příloze (faktura, fotka...)
+  final DateTime? nextDueDate;     // Scheduled date for the next service
+  final double? nextDueOdometer;   // Odometer target for the next service (km)
+  final String? attachmentPath;    // Local path to an invoice PDF or photo
 
   ServiceRecord({
     required this.id,

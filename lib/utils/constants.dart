@@ -1,3 +1,8 @@
+/// Application-wide constants: lookup tables for fuel types, route types,
+/// weather conditions, service types, goal types and reminder thresholds.
+///
+/// All label and icon maps use English keys (matching the stored DB values)
+/// and localised (Czech) display strings for the app UI.
 class AppConstants {
   static const List<String> fuelTypes = [
     'Benzín',
@@ -56,7 +61,7 @@ class AppConstants {
     'offroad': '🏔️',
   };
 
-  // ==================== SERVIS ====================
+  // ==================== SERVICE ====================
 
   static const List<String> serviceTypes = [
     'oil',
@@ -91,7 +96,7 @@ class AppConstants {
     'other': '🔧',
   };
 
-  /// Po kolika měsících navrhnout příští termín (null = nenavrhovat automaticky)
+  /// How many months ahead to suggest the next due date (null = do not suggest automatically).
   static const Map<String, int?> serviceNextDueMonths = {
     'oil': 12,
     'tires': 6,
@@ -103,7 +108,7 @@ class AppConstants {
     'other': null,
   };
 
-  /// Kolik dní předem upozornit (před datem)
+  /// How many days before the due date to trigger a reminder.
   static const Map<String, int> serviceReminderDays = {
     'oil': 14,
     'tires': 14,
@@ -115,7 +120,7 @@ class AppConstants {
     'other': 30,
   };
 
-  /// Kolik km předem upozornit (null = nepříhlídnout km)
+  /// How many km before the next-due odometer reading to trigger a reminder (null = no km check).
   static const Map<String, double?> serviceReminderKm = {
     'oil': 1000,
     'tires': 1000,
@@ -127,7 +132,7 @@ class AppConstants {
     'other': 500,
   };
 
-  // ==================== POJISTKY ====================
+  // ==================== INSURANCE ====================
 
   static const List<String> insuranceTypes = [
     'pov',
@@ -153,7 +158,7 @@ class AppConstants {
     'other': '📜',
   };
 
-  /// Kolik dní předem upozornit na vypršení pojištění
+  /// How many days before expiry to show an insurance reminder.
   static const Map<String, int> insuranceReminderDays = {
     'pov': 30,
     'comprehensive': 30,
@@ -162,12 +167,12 @@ class AppConstants {
     'other': 30,
   };
 
-  // ==================== VOZÍKY ====================
+  // ==================== TRAILERS ====================
 
-  /// Kolik dní předem upozornit na STK / TP vozíku
+  /// How many days before MOT expiry to show a trailer tech-check reminder.
   static const int trailerTechReminderDays = 30;
 
-  // ==================== CÍLE ====================
+  // ==================== GOALS ====================
 
   static const List<String> goalTypes = [
     'fuel',

@@ -5,6 +5,13 @@ import '../models/car.dart';
 import '../database/database_helper.dart';
 import '../services/notification_service.dart';
 
+/// Manages the list of [Car] records.
+///
+/// [deleteCar] performs a cascading cleanup before removing the database row:
+/// it cancels all scheduled service and insurance notifications for the car,
+/// then deletes any locally stored attachment files (invoices, photos).
+///
+/// [getCarById] uses an internal `Map<String, Car>` for O(1) look-up.
 class CarProvider with ChangeNotifier {
   List<Car> _cars = [];
   Map<String, Car> _carMap = {};

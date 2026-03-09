@@ -14,12 +14,12 @@ import 'screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // SQLite FFI pro Windows a Linux desktop
+  // SQLite FFI for Windows and Linux desktop
   if (Platform.isWindows || Platform.isLinux) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
-  // Inicializuj notifikace (Android only — ostatní platformy ignorují)
+  // Initialise notifications (Android only — other platforms are ignored)
   await NotificationService.instance.init();
   await NotificationService.instance.requestPermissions();
   final themeProvider = ThemeProvider();

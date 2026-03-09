@@ -7,14 +7,27 @@ import 'package:sqflite/sqflite.dart';
 
 import '../database/database_helper.dart';
 
+/// Singleton service for JSON backup export and import.
+///
+/// **Export** ([exportBackup]):
+/// Queries all 6 database tables, serialises them to an indented JSON file,
+/// then opens the system share sheet so the user can save to disk, send by
+/// e-mail, upload to Google Drive, etc.  The temporary file is deleted after
+/// a successful share.
+///
+/// **Import** ([importBackup]):
+/// Reads the JSON file produced by export, validates the version header,
+/// then — inside a single database transaction — truncates all tables and
+/// re-inserts every row.  If anything fails the transaction is rolled back
+/// and the database is left untouched.
 class BackupService {
   BackupService._();
   static final BackupService instance = BackupService._();
 
   // ─────────────────────────── EXPORT ───────────────────────────
 
-  /// Exportuje všechna data do JSON a otevře systémový sdílovací dialog
-  /// (uložení na disk, odeslání e-mailem, Google Drive…).
+  /// Exports all data to JSON and opens the system share dialog
+  /// (save to disk, send by e-mail, upload to Google Drive, etc.).
   Future<void> exportBackup() async {
     final db = await DatabaseHelper.instance.database;
 
@@ -38,10 +51,10 @@ class BackupService {
 
     final result = await Share.shareXFiles(
       [XFile(file.path, mimeType: 'application/json')],
-      subject: 'DriveData záloha ${now.day}.${now.month}.${now.year}',
+      subject: 'DriveData backup ${now.day}.${now.month}.${now.year}',
     );
 
-    // Po úspěšném sdílení dočasný soubor smaž
+    // Delete temporary file after successful share
     if (result.status == ShareResultStatus.success && file.existsSync()) {
       file.deleteSync();
     }
@@ -49,23 +62,23 @@ class BackupService {
 
   // ─────────────────────────── IMPORT ───────────────────────────
 
-  /// Načte zálohu z JSON souboru, smaže stávající DB a obnoví data.
-  /// Vrátí popisný řetězec s počty obnovených záznamů.
+  /// Reads a backup JSON file, wipes the current database and restores data.
+  /// Returns a summary string with the counts of restored records.
   Future<String> importBackup(String filePath) async {
     final file = File(filePath);
-    if (!file.existsSync()) throw Exception('Soubor nenalezen: $filePath');
+    if (!file.existsSync()) throw Exception('File not found: $filePath');
 
     final Map<String, dynamic> backup =
         jsonDecode(await file.readAsString());
 
     final version = backup['version'] as int?;
     if (version == null || version != 1) {
-      throw Exception('Nepodporovaná nebo chybějící verze zálohy (nalezeno: $version)');
+      throw Exception('Unsupported or missing backup version (found: $version)');
     }
 
     final db = await DatabaseHelper.instance.database;
 
-    // Smaž + obnov v JEDNÉ transakci — pokud cokoliv selže, DB zůstane nedotčena
+    // Wipe + restore in ONE transaction — if anything fails the DB is untouched
     await db.transaction((txn) async {
       await txn.delete('insurance_policies');
       await txn.delete('trailers');
@@ -108,6 +121,6 @@ class BackupService {
     final insuranceCount = (backup['insurance_policies'] as List).length;
     final trailerCount  = ((backup['trailers'] as List?) ?? []).length;
 
-    return 'Obnoveno: $carCount aut \u2022 $tripCount jízd \u2022 $serviceCount servisů \u2022 $insuranceCount pojistek \u2022 $trailerCount vozíků';
+    return 'Restored: $carCount cars • $tripCount trips • $serviceCount service records • $insuranceCount policies • $trailerCount trailers';
   }
 }
