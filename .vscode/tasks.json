@@ -1,0 +1,18 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Flutter Run (Android)",
+			"type": "shell",
+			"command": "C:\\Users\\Radek\\Desktop\\flutter\\bin\\flutter.bat",
+			"args": [
+				"run",
+				"-d",
+				"emulator-5554"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

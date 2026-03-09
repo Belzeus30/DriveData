@@ -1,0 +1,231 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/car_provider.dart';
+import '../../models/car.dart';
+import '../../utils/constants.dart';
+
+class AddEditCarScreen extends StatefulWidget {
+  final Car? car;
+  const AddEditCarScreen({super.key, this.car});
+
+  @override
+  State<AddEditCarScreen> createState() => _AddEditCarScreenState();
+}
+
+class _AddEditCarScreenState extends State<AddEditCarScreen> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _makeCtrl;
+  late TextEditingController _modelCtrl;
+  late TextEditingController _yearCtrl;
+  late TextEditingController _tankCtrl;
+  late TextEditingController _engineVolCtrl;
+  late TextEditingController _powerCtrl;
+  late TextEditingController _noteCtrl;
+  late TextEditingController _typicalConsumptionCtrl;
+  late String _fuelType;
+
+  bool get isEditing => widget.car != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final c = widget.car;
+    _makeCtrl = TextEditingController(text: c?.make ?? '');
+    _modelCtrl = TextEditingController(text: c?.model ?? '');
+    _yearCtrl = TextEditingController(text: c?.year.toString() ?? '');
+    _tankCtrl = TextEditingController(text: c?.tankCapacity.toString() ?? '');
+    _engineVolCtrl = TextEditingController(text: c?.engineVolume.toString() ?? '');
+    _powerCtrl = TextEditingController(text: c?.enginePower.toString() ?? '');
+    _noteCtrl = TextEditingController(text: c?.note ?? '');
+    _typicalConsumptionCtrl = TextEditingController(text: c?.typicalConsumption?.toString() ?? '');
+    _fuelType = c?.fuelType ?? AppConstants.fuelTypes.first;
+  }
+
+  @override
+  void dispose() {
+    for (final ctrl in [_makeCtrl, _modelCtrl, _yearCtrl, _tankCtrl, _engineVolCtrl, _powerCtrl, _noteCtrl, _typicalConsumptionCtrl]) {
+      ctrl.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    final provider = context.read<CarProvider>();
+    if (isEditing) {
+      await provider.updateCar(widget.car!.copyWith(
+        make: _makeCtrl.text.trim(),
+        model: _modelCtrl.text.trim(),
+        year: int.parse(_yearCtrl.text),
+        fuelType: _fuelType,
+        tankCapacity: double.parse(_tankCtrl.text),
+        engineVolume: double.parse(_engineVolCtrl.text),
+        enginePower: int.parse(_powerCtrl.text),
+        note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
+        typicalConsumption: double.tryParse(_typicalConsumptionCtrl.text),
+      ));
+    } else {
+      await provider.addCar(
+        make: _makeCtrl.text.trim(),
+        model: _modelCtrl.text.trim(),
+        year: int.parse(_yearCtrl.text),
+        fuelType: _fuelType,
+        tankCapacity: double.parse(_tankCtrl.text),
+        engineVolume: double.parse(_engineVolCtrl.text),
+        enginePower: int.parse(_powerCtrl.text),
+        note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
+        typicalConsumption: double.tryParse(_typicalConsumptionCtrl.text),
+      );
+    }
+    if (mounted) Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(isEditing ? 'Upravit auto' : 'Přidat auto'),
+        actions: [
+          TextButton(onPressed: _save, child: const Text('Uložit')),
+        ],
+      ),
+      body: Form(
+        key: _formKey,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const _SectionHeader('Základní informace'),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _makeCtrl,
+                    decoration: const InputDecoration(labelText: 'Značka', hintText: 'Škoda'),
+                    textCapitalization: TextCapitalization.words,
+                    validator: (v) => v!.isEmpty ? 'Povinné pole' : null,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: _modelCtrl,
+                    decoration: const InputDecoration(labelText: 'Model', hintText: 'Octavia'),
+                    textCapitalization: TextCapitalization.words,
+                    validator: (v) => v!.isEmpty ? 'Povinné pole' : null,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _yearCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Rok výroby',
+                      hintText: DateTime.now().year.toString(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (v) {
+                      final n = int.tryParse(v ?? '');
+                      if (n == null || n < 1900 || n > 2100) return 'Neplatný rok';
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _fuelType,
+                    decoration: const InputDecoration(labelText: 'Palivo'),
+                    items: AppConstants.fuelTypes
+                        .map((ft) => DropdownMenuItem(value: ft, child: Text(ft)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _fuelType = v!),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const _SectionHeader('Motor a nádrž'),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _engineVolCtrl,
+                    decoration: const InputDecoration(labelText: 'Objem motoru (l)', hintText: '1.6'),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    validator: (v) => double.tryParse(v ?? '') == null ? 'Neplatná hodnota' : null,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: _powerCtrl,
+                    decoration: const InputDecoration(labelText: 'Výkon (kW)', hintText: '85'),
+                    keyboardType: TextInputType.number,
+                    validator: (v) => int.tryParse(v ?? '') == null ? 'Neplatná hodnota' : null,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _tankCtrl,
+              decoration: const InputDecoration(labelText: 'Objem nádrže (l)', hintText: '55'),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              validator: (v) => double.tryParse(v ?? '') == null ? 'Neplatná hodnota' : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _typicalConsumptionCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Typická spotřeba z palubního počítače (l/100km)',
+                hintText: '7.5',
+                helperText: 'Použije se pro hodnocení předvídavosti (do 5 jízd)',
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              validator: (v) {
+                if (v == null || v.isEmpty) return null; // volitelné
+                return double.tryParse(v) == null ? 'Neplatná hodnota' : null;
+              },
+            ),
+            const SizedBox(height: 24),
+            const _SectionHeader('Volitelné'),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _noteCtrl,
+              decoration: const InputDecoration(labelText: 'Poznámka', hintText: 'Zimní gumy, tažné...'),
+              maxLines: 2,
+            ),
+            const SizedBox(height: 32),
+            FilledButton(onPressed: _save, child: Text(isEditing ? 'Uložit změny' : 'Přidat auto')),
+          ],
+        ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String text;
+  const _SectionHeader(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(text,
+        style: Theme.of(context)
+            .textTheme
+            .labelLarge
+            ?.copyWith(color: Theme.of(context).colorScheme.primary));
+  }
+}
