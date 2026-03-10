@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/car.dart';
 import '../models/trip.dart';
 import '../models/service_record.dart';
@@ -214,6 +215,7 @@ class DatabaseHelper {
   Future<String> insertCar(Car car) async {
     final db = await database;
     await db.insert('cars', car.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await _markChanged();
     return car.id;
   }
 
@@ -232,19 +234,23 @@ class DatabaseHelper {
 
   Future<int> updateCar(Car car) async {
     final db = await database;
-    return await db.update('cars', car.toMap(), where: 'id = ?', whereArgs: [car.id]);
+    final result = await db.update('cars', car.toMap(), where: 'id = ?', whereArgs: [car.id]);
+    await _markChanged();
+    return result;
   }
 
   Future<int> deleteCar(String id) async {
     final db = await database;
     // Cascade-delete all data owned by this car atomically
-    return await db.transaction((txn) async {
+    final result = await db.transaction((txn) async {
       await txn.delete('trips', where: 'carId = ?', whereArgs: [id]);
       await txn.delete('service_records', where: 'carId = ?', whereArgs: [id]);
       await txn.delete('goals', where: 'carId = ?', whereArgs: [id]);
       await txn.delete('insurance_policies', where: 'carId = ?', whereArgs: [id]);
       return await txn.delete('cars', where: 'id = ?', whereArgs: [id]);
     });
+    await _markChanged();
+    return result;
   }
 
   // ==================== TRIPS ====================
@@ -252,6 +258,7 @@ class DatabaseHelper {
   Future<String> insertTrip(Trip trip) async {
     final db = await database;
     await db.insert('trips', trip.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await _markChanged();
     return trip.id;
   }
 
@@ -283,12 +290,16 @@ class DatabaseHelper {
 
   Future<int> updateTrip(Trip trip) async {
     final db = await database;
-    return await db.update('trips', trip.toMap(), where: 'id = ?', whereArgs: [trip.id]);
+    final result = await db.update('trips', trip.toMap(), where: 'id = ?', whereArgs: [trip.id]);
+    await _markChanged();
+    return result;
   }
 
   Future<int> deleteTrip(String id) async {
     final db = await database;
-    return await db.delete('trips', where: 'id = ?', whereArgs: [id]);
+    final result = await db.delete('trips', where: 'id = ?', whereArgs: [id]);
+    await _markChanged();
+    return result;
   }
 
   // ==================== STATISTIKY ====================
@@ -329,12 +340,20 @@ class DatabaseHelper {
     db.close();
   }
 
+  /// Saves the current timestamp to SharedPreferences so the UI can detect
+  /// unsaved changes and prompt the user to back up.
+  Future<void> _markChanged() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('lastDataChangeAt', DateTime.now().toIso8601String());
+  }
+
   // ==================== SERVICE RECORDS ====================
 
   Future<String> insertServiceRecord(ServiceRecord record) async {
     final db = await database;
     await db.insert('service_records', record.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
+    await _markChanged();
     return record.id;
   }
 
@@ -351,14 +370,18 @@ class DatabaseHelper {
 
   Future<int> updateServiceRecord(ServiceRecord record) async {
     final db = await database;
-    return await db.update('service_records', record.toMap(),
+    final result = await db.update('service_records', record.toMap(),
         where: 'id = ?', whereArgs: [record.id]);
+    await _markChanged();
+    return result;
   }
 
   Future<int> deleteServiceRecord(String id) async {
     final db = await database;
-    return await db
+    final result = await db
         .delete('service_records', where: 'id = ?', whereArgs: [id]);
+    await _markChanged();
+    return result;
   }
 
   // ==================== GOALS ====================
@@ -367,6 +390,7 @@ class DatabaseHelper {
     final db = await database;
     await db.insert('goals', goal.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
+    await _markChanged();
     return goal.id;
   }
 
@@ -382,13 +406,17 @@ class DatabaseHelper {
 
   Future<int> updateGoal(Goal goal) async {
     final db = await database;
-    return await db
+    final result = await db
         .update('goals', goal.toMap(), where: 'id = ?', whereArgs: [goal.id]);
+    await _markChanged();
+    return result;
   }
 
   Future<int> deleteGoal(String id) async {
     final db = await database;
-    return await db.delete('goals', where: 'id = ?', whereArgs: [id]);
+    final result = await db.delete('goals', where: 'id = ?', whereArgs: [id]);
+    await _markChanged();
+    return result;
   }
 
   // ==================== INSURANCE POLICIES ====================
@@ -397,6 +425,7 @@ class DatabaseHelper {
     final db = await database;
     await db.insert('insurance_policies', policy.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
+    await _markChanged();
     return policy.id;
   }
 
@@ -416,14 +445,18 @@ class DatabaseHelper {
 
   Future<int> updateInsurancePolicy(InsurancePolicy policy) async {
     final db = await database;
-    return await db.update('insurance_policies', policy.toMap(),
+    final result = await db.update('insurance_policies', policy.toMap(),
         where: 'id = ?', whereArgs: [policy.id]);
+    await _markChanged();
+    return result;
   }
 
   Future<int> deleteInsurancePolicy(String id) async {
     final db = await database;
-    return await db
+    final result = await db
         .delete('insurance_policies', where: 'id = ?', whereArgs: [id]);
+    await _markChanged();
+    return result;
   }
 
   // ==================== TRAILERS ====================
@@ -432,6 +465,7 @@ class DatabaseHelper {
     final db = await database;
     await db.insert('trailers', trailer.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
+    await _markChanged();
     return trailer.id;
   }
 
@@ -443,8 +477,10 @@ class DatabaseHelper {
 
   Future<int> updateTrailer(Trailer trailer) async {
     final db = await database;
-    return await db.update('trailers', trailer.toMap(),
+    final result = await db.update('trailers', trailer.toMap(),
         where: 'id = ?', whereArgs: [trailer.id]);
+    await _markChanged();
+    return result;
   }
 
   Future<int> deleteTrailer(String id) async {
@@ -452,6 +488,8 @@ class DatabaseHelper {
     // Detach trips from the trailer without deleting them
     await db.execute(
         'UPDATE trips SET trailerId = NULL WHERE trailerId = ?', [id]);
-    return await db.delete('trailers', where: 'id = ?', whereArgs: [id]);
+    final result = await db.delete('trailers', where: 'id = ?', whereArgs: [id]);
+    await _markChanged();
+    return result;
   }
 }

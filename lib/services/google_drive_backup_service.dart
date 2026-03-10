@@ -68,6 +68,15 @@ class GoogleDriveBackupService {
 
   // ─────────────────────── TIMESTAMP ────────────────────────────
 
+  /// Returns the last time any data was changed locally (written by [DatabaseHelper]).
+  /// Returns `null` if no data has ever been written.
+  Future<DateTime?> getLastDataChangeTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('lastDataChangeAt');
+    if (raw == null) return null;
+    return DateTime.tryParse(raw);
+  }
+
   /// Returns the last time a backup was successfully pushed from this device,
   /// read from local [SharedPreferences].  Returns `null` if never backed up.
   Future<DateTime?> getLastLocalBackupTime() async {

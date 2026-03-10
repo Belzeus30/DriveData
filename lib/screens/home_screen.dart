@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/car_provider.dart';
 import '../providers/goal_provider.dart';
 import '../providers/insurance_provider.dart';
@@ -15,6 +14,7 @@ import 'analytics/analytics_screen.dart';
 import 'service/service_screen.dart';
 import 'goals/goals_screen.dart';
 import 'settings/settings_screen.dart';
+import '../services/google_drive_backup_service.dart';
 
 /// Shared navigation data — used by both NavigationRail (wide) and NavigationBar (narrow).
 const _navItems = [
@@ -52,8 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   /// Whether to show the "not backed up" warning banner.
   bool _showBackupBanner = false;
-  /// Days since last Drive backup (null = never backed up).
-  int? _backupDaysAgo;
   bool _bannerDismissed = false;
   /// Ordered list of full-screen content widgets kept alive by [IndexedStack].
   final _screens = const [
@@ -85,34 +83,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _checkBackupBanner() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('lastDriveBackupAt');
+    final svc = GoogleDriveBackupService.instance;
+    final lastChange = await svc.getLastDataChangeTime();
+    final lastBackup = await svc.getLastLocalBackupTime();
     if (!mounted) return;
-    if (raw == null) {
-      // Never backed up to Drive
-      setState(() { _showBackupBanner = true; _backupDaysAgo = null; });
+    // Show banner only if there are changes newer than the last backup.
+    if (lastChange == null) {
+      // No data ever written — nothing to back up.
+      setState(() => _showBackupBanner = false);
+    } else if (lastBackup == null || lastChange.isAfter(lastBackup)) {
+      setState(() => _showBackupBanner = true);
     } else {
-      final last = DateTime.tryParse(raw);
-      if (last != null) {
-        final days = DateTime.now().difference(last).inDays;
-        if (days >= 7) {
-          setState(() { _showBackupBanner = true; _backupDaysAgo = days; });
-        }
-      }
+      setState(() => _showBackupBanner = false);
     }
   }
 
   /// Returns the backup-warning banner, or an empty widget when hidden.
   Widget _buildBanner() {
     if (!_showBackupBanner || _bannerDismissed) return const SizedBox.shrink();
-    final msg = _backupDaysAgo == null
-        ? 'Data nebyla nikdy zalohována na Google Drive'
-        : 'Data nebyla zalohována na Google Drive $_backupDaysAgo dní';
     return MaterialBanner(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       leading: Icon(Icons.cloud_off_outlined,
           color: Theme.of(context).colorScheme.error),
-      content: Text(msg, style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)),
+      content: Text('Existují nezálohovaná data. Zálohuj na Google Drive.',
+          style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)),
       backgroundColor: Theme.of(context).colorScheme.errorContainer,
       actions: [
         TextButton(
