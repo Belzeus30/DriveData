@@ -168,10 +168,23 @@ class Trip {
   /// A traffic-density tolerance is applied (+5.5 % per level above 1)
   /// because stop-and-go naturally raises fuel consumption:
   ///   level 1 ×1.00 · level 2 ×1.055 · level 3 ×1.11 · level 4 ×1.165 · level 5 ×1.22
+  ///
+  /// A route-type factor is also applied so that city driving (naturally higher
+  /// consumption) is not unfairly penalised and highway driving (naturally lower)
+  /// is not unfairly rewarded. Baseline is assumed to be "mixed" driving:
+  ///   city ×1.25 · mixed ×1.00 · highway ×0.88 · offroad ×1.30
+  static const _routeConsumptionFactor = {
+    'city':    1.25,
+    'mixed':   1.00,
+    'highway': 0.88,
+    'offroad': 1.30,
+  };
+
   double? anticipationScoreFor(double? baseline) {
     if (fuelConsumption == null || baseline == null || baseline <= 0) return null;
     final trafficMultiplier = 1.0 + (trafficLevel - 1) * 0.055;
-    final adjustedBaseline = baseline * trafficMultiplier;
+    final routeFactor = _routeConsumptionFactor[routeType] ?? 1.0;
+    final adjustedBaseline = baseline * trafficMultiplier * routeFactor;
     return (adjustedBaseline / fuelConsumption! * 8.5).clamp(1.0, 10.0);
   }
 
