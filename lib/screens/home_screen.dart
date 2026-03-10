@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/car_provider.dart';
 import '../providers/goal_provider.dart';
 import '../providers/insurance_provider.dart';
@@ -49,7 +50,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   /// Index of the currently visible tab (0 = Trips … 6 = Analytics).
   int _currentIndex = 0;
-
+  /// Whether to show the "not backed up" warning banner.
+  bool _showBackupBanner = false;
+  /// Days since last Drive backup (null = never backed up).
+  int? _backupDaysAgo;
+  bool _bannerDismissed = false;
   /// Ordered list of full-screen content widgets kept alive by [IndexedStack].
   final _screens = const [
     TripsScreen(),
@@ -76,6 +81,59 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<InsuranceProvider>().loadPolicies();
       context.read<TrailerProvider>().loadTrailers();
     });
+    _checkBackupBanner();
+  }
+
+  Future<void> _checkBackupBanner() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('lastDriveBackupAt');
+    if (!mounted) return;
+    if (raw == null) {
+      // Never backed up to Drive
+      setState(() { _showBackupBanner = true; _backupDaysAgo = null; });
+    } else {
+      final last = DateTime.tryParse(raw);
+      if (last != null) {
+        final days = DateTime.now().difference(last).inDays;
+        if (days >= 7) {
+          setState(() { _showBackupBanner = true; _backupDaysAgo = days; });
+        }
+      }
+    }
+  }
+
+  /// Returns the backup-warning banner, or an empty widget when hidden.
+  Widget _buildBanner() {
+    if (!_showBackupBanner || _bannerDismissed) return const SizedBox.shrink();
+    final msg = _backupDaysAgo == null
+        ? 'Data nebyla nikdy zalohována na Google Drive'
+        : 'Data nebyla zalohována na Google Drive $_backupDaysAgo dní';
+    return MaterialBanner(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: Icon(Icons.cloud_off_outlined,
+          color: Theme.of(context).colorScheme.error),
+      content: Text(msg, style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)),
+      backgroundColor: Theme.of(context).colorScheme.errorContainer,
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ).then((_) {
+              // Re-check after returning from settings (user may have backed up)
+              setState(() => _bannerDismissed = false);
+              _checkBackupBanner();
+            });
+          },
+          child: const Text('Zalohovat'),
+        ),
+        TextButton(
+          onPressed: () => setState(() => _bannerDismissed = true),
+          child: const Text('Zavrit'),
+        ),
+      ],
+    );
   }
 
   /// Builds the adaptive navigation shell.
@@ -123,9 +181,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const VerticalDivider(width: 1, thickness: 1),
                 Expanded(
-                  child: IndexedStack(
-                    index: _currentIndex,
-                    children: _screens,
+                  child: Column(
+                    children: [
+                      _buildBanner(),
+                      Expanded(
+                        child: IndexedStack(
+                          index: _currentIndex,
+                          children: _screens,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -135,9 +200,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // --- NARROW: bottom NavigationBar (phones) ---
         return Scaffold(
-          body: IndexedStack(
-            index: _currentIndex,
-            children: _screens,
+          body: Column(
+            children: [
+              _buildBanner(),
+              Expanded(
+                child: IndexedStack(
+                  index: _currentIndex,
+                  children: _screens,
+                ),
+              ),
+            ],
           ),
           bottomNavigationBar: NavigationBar(
             selectedIndex: _currentIndex,
