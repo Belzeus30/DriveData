@@ -88,6 +88,18 @@ class _AddEditTripScreenState extends State<AddEditTripScreen> {
       _startLocCtrl.text = t.startLocation ?? '';
       _endLocCtrl.text = t.endLocation ?? '';
       _noteCtrl.text = t.note ?? '';
+    } else {
+      // New trip — pre-fill odometer start from the last trip's end for this car.
+      _prefillOdometerStart(_carId);
+    }
+  }
+
+  /// Pre-fills [_odometerStartCtrl] with the last recorded odometer value
+  /// for [carId]. Only used when creating a new trip (not when editing).
+  void _prefillOdometerStart(String carId) {
+    final latest = context.read<TripProvider>().latestOdometerPerCar[carId];
+    if (latest != null) {
+      _odometerStartCtrl.text = latest.toStringAsFixed(0);
     }
   }
 
@@ -241,7 +253,11 @@ class _AddEditTripScreenState extends State<AddEditTripScreen> {
               initialValue: _carId.isEmpty ? null : _carId,
               decoration: const InputDecoration(labelText: 'Auto'),
               items: cars.map((c) => DropdownMenuItem(value: c.id, child: Text(c.fullName))).toList(),
-              onChanged: (v) => setState(() => _carId = v!),
+              onChanged: (v) {
+                setState(() => _carId = v!);
+                // When switching car on a new trip, update the suggested odometer start.
+                if (!isEditing) _prefillOdometerStart(v!);
+              },
               validator: (v) => v == null ? 'Vyber auto' : null,
             ),
             const SizedBox(height: 12),
