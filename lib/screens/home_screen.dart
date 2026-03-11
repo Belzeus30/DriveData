@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../database/database_helper.dart';
 import '../providers/car_provider.dart';
 import '../providers/goal_provider.dart';
 import '../providers/insurance_provider.dart';
@@ -80,6 +81,13 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<TrailerProvider>().loadTrailers();
     });
     _checkBackupBanner();
+    DatabaseHelper.dataVersion.addListener(_checkBackupBanner);
+  }
+
+  @override
+  void dispose() {
+    DatabaseHelper.dataVersion.removeListener(_checkBackupBanner);
+    super.dispose();
   }
 
   Future<void> _checkBackupBanner() async {

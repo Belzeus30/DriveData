@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/car.dart';
 import '../models/trip.dart';
@@ -20,6 +21,10 @@ import '../models/trailer.dart';
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
+
+  /// Incremented on every insert / update / delete so listeners (e.g. the
+  /// backup-warning banner in HomeScreen) can react without polling.
+  static final dataVersion = ValueNotifier<int>(0);
 
   DatabaseHelper._init();
 
@@ -345,6 +350,7 @@ class DatabaseHelper {
   Future<void> _markChanged() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('lastDataChangeAt', DateTime.now().toIso8601String());
+    dataVersion.value++;
   }
 
   // ==================== SERVICE RECORDS ====================
