@@ -207,16 +207,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const VerticalDivider(width: 1, thickness: 1),
                 Expanded(
-                  child: Column(
-                    children: [
-                      _buildBanner(),
-                      Expanded(
-                        child: IndexedStack(
-                          index: _currentIndex,
-                          children: _screens,
+                  child: SafeArea(
+                    child: Column(
+                      children: [
+                        _buildBanner(),
+                        Expanded(
+                          child: IndexedStack(
+                            index: _currentIndex,
+                            children: _screens,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -226,16 +228,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // --- NARROW: bottom NavigationBar (phones) ---
         return Scaffold(
-          body: Column(
-            children: [
-              _buildBanner(),
-              Expanded(
-                child: IndexedStack(
-                  index: _currentIndex,
-                  children: _screens,
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildBanner(),
+                Expanded(
+                  child: IndexedStack(
+                    index: _currentIndex,
+                    children: _screens,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           bottomNavigationBar: NavigationBar(
             selectedIndex: _currentIndex,
