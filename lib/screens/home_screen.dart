@@ -101,32 +101,56 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Returns the backup-warning banner, or an empty widget when hidden.
   Widget _buildBanner() {
     if (!_showBackupBanner || _bannerDismissed) return const SizedBox.shrink();
-    return MaterialBanner(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      leading: Icon(Icons.cloud_off_outlined,
-          color: Theme.of(context).colorScheme.error),
-      content: Text('Existují nezálohovaná data. Zálohuj na Google Drive.',
-          style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)),
-      backgroundColor: Theme.of(context).colorScheme.errorContainer,
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
-            ).then((_) {
-              // Re-check after returning from settings (user may have backed up)
-              setState(() => _bannerDismissed = false);
-              _checkBackupBanner();
-            });
-          },
-          child: const Text('Zalohovat'),
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      child: Material(
+        color: colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            children: [
+              Icon(Icons.cloud_off_rounded, color: colorScheme.error, size: 22),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Existují nezálohovaná data',
+                  style: TextStyle(
+                    color: colorScheme.onErrorContainer,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: colorScheme.error,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  ).then((_) {
+                    setState(() => _bannerDismissed = false);
+                    _checkBackupBanner();
+                  });
+                },
+                child: const Text('Zálohovat', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+              IconButton(
+                icon: Icon(Icons.close, size: 18, color: colorScheme.onErrorContainer),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () => setState(() => _bannerDismissed = true),
+              ),
+            ],
+          ),
         ),
-        TextButton(
-          onPressed: () => setState(() => _bannerDismissed = true),
-          child: const Text('Zavrit'),
-        ),
-      ],
+      ),
     );
   }
 

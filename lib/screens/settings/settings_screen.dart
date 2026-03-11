@@ -164,7 +164,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         setState(() => _lastDriveBackup = last);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Zaloha na Google Drive probehla'), backgroundColor: Colors.green),
+          const SnackBar(content: Text('Záloha na Google Drive proběhla ✓'), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
