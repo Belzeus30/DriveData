@@ -50,9 +50,17 @@ Každá jízda dostane objektivní hodnocení 1–10 ze tří složek:
 - Evidence přívěsů, připojení k jízdám
 - Automatická úprava rychlostních limitů (CZ zákon: 80 km/h dálnice, 50 město, 30 terén)
 
+### ☁️ Google Drive záloha
+- Přihlášení přes Google účet
+- Záloha celé databáze do privátního `appDataFolder` na Google Drive
+- Obnova zálohy z Drive na nové zařízení
+- Zobrazení času poslední zálohy a poslední změny dat
+- Automatické tiché přihlášení při startu aplikace
+
 ### ⚙️ Nastavení
 - Světlé / Tmavé téma + výběr barevného schématu
-- Zálohování a obnova dat (export/import SQLite DB)
+- Lokální záloha a obnova dat (export/import SQLite DB)
+- Google Drive záloha
 
 ---
 
@@ -65,6 +73,10 @@ Každá jízda dostane objektivní hodnocení 1–10 ze tří složek:
 | Databáze | [sqflite](https://pub.dev/packages/sqflite) (lokální SQLite) |
 | Grafy | [fl_chart](https://pub.dev/packages/fl_chart) |
 | Notifikace | [flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications) |
+| Google přihlášení | [google_sign_in](https://pub.dev/packages/google_sign_in) |
+| Google Drive API | [googleapis](https://pub.dev/packages/googleapis) + [extension_google_sign_in_as_googleapis_auth](https://pub.dev/packages/extension_google_sign_in_as_googleapis_auth) |
+| HTTP klient | [http](https://pub.dev/packages/http) |
+| Přílohy | [file_picker](https://pub.dev/packages/file_picker), [image_picker](https://pub.dev/packages/image_picker), [open_filex](https://pub.dev/packages/open_filex), [share_plus](https://pub.dev/packages/share_plus) |
 | ID generace | [uuid](https://pub.dev/packages/uuid) |
 | Lokalizace čísel | [intl](https://pub.dev/packages/intl) |
 
@@ -114,7 +126,8 @@ lib/
 │   ├── trips/                   # Jízdy + přidání/editace
 │   └── settings/                # Nastavení, záloha
 ├── services/
-│   ├── backup_service.dart      # Export / import DB
+│   ├── backup_service.dart             # Lokální export / import DB
+│   ├── google_drive_backup_service.dart # Záloha a obnova přes Google Drive
 │   └── notification_service.dart
 └── utils/
     └── constants.dart           # Konstanty (ikony, popisky, barvy)
