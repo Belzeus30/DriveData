@@ -21,7 +21,7 @@ class CarsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Moje auta'),
+        title: const Text('Moje vozidla'),
         centerTitle: false,
         actions: [
           IconButton(
@@ -44,9 +44,9 @@ class CarsScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.garage_outlined, size: 72, color: Colors.grey[400]),
                   const SizedBox(height: 16),
-                  Text('Žádná auta', style: Theme.of(context).textTheme.titleMedium),
+                  Text('Žádná vozidla', style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
-                  Text('Přidej své první auto kliknutím na +',
+                  Text('Přidej své první vozidlo kliknutím na +',
                       style: TextStyle(color: Colors.grey[600])),
                 ],
               ),
@@ -69,7 +69,7 @@ class CarsScreen extends StatelessWidget {
           MaterialPageRoute(builder: (_) => const AddEditCarScreen()),
         ),
         icon: const Icon(Icons.add),
-        label: const Text('Přidat auto'),
+        label: const Text('Přidat vozidlo'),
       ),
     );
   }
@@ -146,13 +146,12 @@ class _CarTile extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     alignment: Alignment.center,
-                    child: Text(
-                      car.make.substring(0, 1).toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: Icon(
+                      car.isMotorcycle
+                          ? Icons.two_wheeler_outlined
+                          : Icons.directions_car_outlined,
+                      color: Colors.white,
+                      size: 28,
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -185,6 +184,8 @@ class _CarTile extends StatelessWidget {
                               _SpecTag(
                                   '📊 ${car.typicalConsumption!.toStringAsFixed(1)} l/100',
                                   cs),
+                            if (car.spz != null)
+                              _SpecTag('🔖 ${car.spz!}', cs),
                           ],
                         ),
                       ],
@@ -201,9 +202,9 @@ class _CarTile extends StatelessWidget {
                         final confirmed = await showDialog<bool>(
                           context: context,
                           builder: (ctx) => AlertDialog(
-                            title: const Text('Smazat auto?'),
+                            title: const Text('Smazat vozidlo?'),
                             content: Text(
-                                'Smazáním auta "${car.fullName}" se trvale smažou také všechny jeho jízdy, servisní záznamy, pojistky a cíle. Tato akce je nevratná.'),
+                                'Smazáním vozidla "${car.fullName}" se trvale smažou také všechny jeho jízdy, servisní záznamy, pojistky a cíle. Tato akce je nevratná.'),
                             actions: [
                               TextButton(
                                   onPressed: () => Navigator.pop(ctx, false),

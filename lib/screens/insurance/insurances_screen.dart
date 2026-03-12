@@ -161,7 +161,7 @@ class InsurancesContent extends StatelessWidget {
 
   String _carName(InsurancePolicy policy, CarProvider carProvider) {
     if (policy.carId == null) return 'osobní';
-    return carProvider.getCarById(policy.carId!)?.fullName ?? 'neznámé auto';
+    return carProvider.getCarById(policy.carId!)?.fullName ?? 'neznámé vozidlo';
   }
 
   void _openEdit(BuildContext context, InsurancePolicy policy) {
@@ -211,7 +211,7 @@ class _PolicyCard extends StatelessWidget {
   static final _amtFmt = NumberFormat('#,##0', 'cs');
 
   final InsurancePolicy policy;
-  /// Human-readable car name or an `'Vs̆echna auta'` fallback.
+  /// Human-readable vehicle name or an `'osobní'` fallback.
   final String carName;
   /// `true` when the policy validity has already expired.
   final bool isOverdue;
@@ -291,7 +291,7 @@ class _PolicyCard extends StatelessWidget {
                     fontWeight:
                         (isOverdue || isDueSoon) ? FontWeight.bold : null),
               ),
-              Text('auto: $carName',
+                Text('vozidlo: $carName',
                   style: theme.textTheme.bodySmall?.copyWith(
                       color: cs.onSurfaceVariant)),
               if (isOverdue)

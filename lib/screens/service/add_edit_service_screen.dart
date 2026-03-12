@@ -10,6 +10,7 @@ import '../../providers/car_provider.dart';
 import '../../providers/service_provider.dart';
 import '../../services/notification_service.dart';
 import '../../utils/constants.dart';
+import '../../widgets/vehicle_filter_widgets.dart';
 
 /// Form screen for creating or editing a [ServiceRecord].
 ///
@@ -172,7 +173,7 @@ class _AddEditServiceScreenState extends State<AddEditServiceScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     final serviceProvider = context.read<ServiceProvider>();
-    final carName = context.read<CarProvider>().getCarById(_carId)?.fullName ?? 'auto';
+    final carName = context.read<CarProvider>().getCarById(_carId)?.fullName ?? 'vozidlo';
     ServiceRecord savedRecord;
     if (isEditing) {
       savedRecord = widget.record!.copyWith(
@@ -225,15 +226,11 @@ class _AddEditServiceScreenState extends State<AddEditServiceScreen> {
             child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            DropdownButtonFormField<String>(
-              initialValue: _carId.isEmpty ? null : _carId,
-              decoration: const InputDecoration(labelText: 'Auto'),
-              items: cars
-                  .map((c) =>
-                      DropdownMenuItem(value: c.id, child: Text(c.fullName)))
-                  .toList(),
+            VehicleDropdownField(
+              vehicles: cars,
+              value: _carId.isEmpty ? null : _carId,
               onChanged: (v) => setState(() => _carId = v!),
-              validator: (v) => v == null ? 'Vyber auto' : null,
+              validator: (v) => v == null ? 'Vyber vozidlo' : null,
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(

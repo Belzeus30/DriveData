@@ -38,11 +38,14 @@ class CarProvider with ChangeNotifier {
     required double tankCapacity,
     required double engineVolume,
     required int enginePower,
+    String vehicleType = 'Auto',
     double? typicalConsumption,
+    String? spz,
     String? note,
   }) async {
     final car = Car(
       id: _uuid.v4(),
+      vehicleType: vehicleType,
       make: make,
       model: model,
       year: year,
@@ -51,6 +54,7 @@ class CarProvider with ChangeNotifier {
       engineVolume: engineVolume,
       enginePower: enginePower,
       typicalConsumption: typicalConsumption,
+      spz: spz,
       note: note,
     );
     await DatabaseHelper.instance.insertCar(car);

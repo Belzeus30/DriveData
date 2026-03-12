@@ -4,6 +4,7 @@ import '../../models/goal.dart';
 import '../../providers/car_provider.dart';
 import '../../providers/goal_provider.dart';
 import '../../utils/constants.dart';
+import '../../widgets/vehicle_filter_widgets.dart';
 
 /// Form screen for creating or editing a driving [Goal].
 ///
@@ -123,16 +124,11 @@ class _AddEditGoalScreenState extends State<AddEditGoalScreen> {
             ),
             const SizedBox(height: 12),
             // Car (optional)
-            DropdownButtonFormField<String?>(
-              initialValue: _carId,
-              decoration: const InputDecoration(
-                  labelText: 'Pro auto (volitelné)'),
-              items: [
-                const DropdownMenuItem(
-                    value: null, child: Text('Všechna auta')),
-                ...cars.map(
-                    (c) => DropdownMenuItem(value: c.id, child: Text(c.fullName))),
-              ],
+            VehicleDropdownField(
+              vehicles: cars,
+              value: _carId,
+              labelText: 'Pro vozidlo (volitelné)',
+              emptyOptionText: 'Všechna vozidla',
               onChanged: (v) => setState(() => _carId = v),
             ),
             const SizedBox(height: 12),

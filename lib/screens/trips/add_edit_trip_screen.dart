@@ -5,6 +5,7 @@ import '../../providers/car_provider.dart';
 import '../../providers/trailer_provider.dart';
 import '../../providers/trip_provider.dart';
 import '../../utils/constants.dart';
+import '../../widgets/vehicle_filter_widgets.dart';
 
 /// Form screen for creating or editing a [Trip].
 ///
@@ -246,19 +247,18 @@ class _AddEditTripScreenState extends State<AddEditTripScreen> {
             child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // --- AUTO & DATUM ---
-            const _SectionHeader('Auto a datum'),
+            // --- VOZIDLO & DATUM ---
+            const _SectionHeader('Vozidlo a datum'),
             const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              initialValue: _carId.isEmpty ? null : _carId,
-              decoration: const InputDecoration(labelText: 'Auto'),
-              items: cars.map((c) => DropdownMenuItem(value: c.id, child: Text(c.fullName))).toList(),
+            VehicleDropdownField(
+              vehicles: cars,
+              value: _carId.isEmpty ? null : _carId,
               onChanged: (v) {
                 setState(() => _carId = v!);
                 // When switching car on a new trip, update the suggested odometer start.
                 if (!isEditing) _prefillOdometerStart(v!);
               },
-              validator: (v) => v == null ? 'Vyber auto' : null,
+              validator: (v) => v == null ? 'Vyber vozidlo' : null,
             ),
             const SizedBox(height: 12),
             ListTile(

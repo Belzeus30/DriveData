@@ -7,6 +7,7 @@ import '../../providers/car_provider.dart';
 import '../../providers/service_provider.dart';
 import '../../providers/trip_provider.dart';
 import '../../utils/constants.dart';
+import '../../widgets/vehicle_filter_widgets.dart';
 import '../settings/settings_screen.dart';
 import 'add_edit_service_screen.dart';
 
@@ -39,24 +40,12 @@ class ServiceScreen extends StatelessWidget {
         centerTitle: false,
         actions: [
           if (cars.isNotEmpty)
-            PopupMenuButton<String>(
-              icon: Icon(
-                serviceProvider.selectedCarId != null ? Icons.filter_alt : Icons.filter_list,
-                color: serviceProvider.selectedCarId != null
-                    ? Theme.of(context).colorScheme.primary
-                    : null,
-              ),
-              tooltip: serviceProvider.selectedCarId != null
-                  ? 'Filtr aktivní — klikni pro změnu'
-                  : 'Filtrovat podle auta',
-              onSelected: (v) async {
-                await serviceProvider.loadRecords(carId: v == '__all__' ? null : v);
+            VehicleFilterMenuButton(
+              vehicles: cars,
+              selectedVehicleId: serviceProvider.selectedCarId,
+              onSelected: (carId) {
+                serviceProvider.loadRecords(carId: carId);
               },
-              itemBuilder: (_) => [
-                const PopupMenuItem(value: '__all__', child: Text('Všechna auta')),
-                ...cars.map(
-                    (c) => PopupMenuItem(value: c.id, child: Text(c.fullName))),
-              ],
             ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
@@ -69,8 +58,8 @@ class ServiceScreen extends StatelessWidget {
       body: Column(
           children: [
               if (serviceProvider.selectedCarId != null)
-                _ServiceFilterBanner(
-                  carName: carProvider.getCarById(serviceProvider.selectedCarId!)?.fullName ?? '',
+                ActiveVehicleFilterBanner(
+                  vehicleName: carProvider.getCarById(serviceProvider.selectedCarId!)?.fullName ?? '',
                   onClear: () => serviceProvider.loadRecords(),
                 ),
               if (reminders.isNotEmpty)
@@ -92,12 +81,12 @@ class ServiceScreen extends StatelessWidget {
                                     size: 72, color: Colors.grey[400]),
                                 const SizedBox(height: 16),
                                 Text(
-                                  cars.isEmpty ? 'Nejprve přidej auto' : 'Žádné záznamy',
+                                  cars.isEmpty ? 'Nejprve přidej vozidlo' : 'Žádné záznamy',
                                   style: Theme.of(context).textTheme.titleMedium),
                                 const SizedBox(height: 8),
                                 Text(
                                   cars.isEmpty
-                                      ? 'Přejdi na záložku Auta a přidej\nsvé vozidlo. Pak budeš moci přidávat servisní záznamy.'
+                                      ? 'Přejdi na záložku Vozidla a přidej\nsvé vozidlo. Pak budeš moci přidávat servisní záznamy.'
                                       : 'Přidej první servisní záznam',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(color: Colors.grey[600])),
@@ -130,48 +119,6 @@ class ServiceScreen extends StatelessWidget {
               icon: const Icon(Icons.add),
               label: const Text('Přidat záznam'),
             ),
-    );
-  }
-}
-
-// ---------- Filter banner ----------
-
-/// Thin coloured banner displayed when a car filter is active in [ServiceScreen].
-///
-/// Mirrors the design of [_FilterBanner] used in [TripsScreen].
-class _ServiceFilterBanner extends StatelessWidget {
-  final String carName;
-  final VoidCallback onClear;
-  const _ServiceFilterBanner({required this.carName, required this.onClear});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Material(
-      color: cs.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        child: Row(
-          children: [
-            Icon(Icons.filter_alt, size: 16, color: cs.onPrimaryContainer),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Filtr: $carName',
-                style: TextStyle(color: cs.onPrimaryContainer, fontWeight: FontWeight.w600),
-              ),
-            ),
-            TextButton(
-              onPressed: onClear,
-              style: TextButton.styleFrom(
-                foregroundColor: cs.onPrimaryContainer,
-                visualDensity: VisualDensity.compact,
-              ),
-              child: const Text('Zrušit filtr'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -150,7 +150,7 @@ class _GoalsList extends StatelessWidget {
             goalProvider.computeProgress(goal, tripProvider.trips);
         final carName = goal.carId != null
             ? carProvider.getCarById(goal.carId!)?.fullName ?? '?'
-            : 'Všechna auta';
+          : 'Všechna vozidla';
         return _GoalCard(
           goal: goal,
           progress: progress,
@@ -197,7 +197,7 @@ class _GoalCard extends StatelessWidget {
   final Goal goal;
   /// Pre-computed progress snapshot for this goal.
   final GoalProgress progress;
-  /// Human-readable car name (or `'Všechna auta'` for global goals).
+  /// Human-readable vehicle name (or `'Všechna vozidla'` for global goals).
   final String carName;
   /// `true` when the goal is in the archive tab.
   final bool isArchive;

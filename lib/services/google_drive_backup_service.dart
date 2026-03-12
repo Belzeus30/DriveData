@@ -1,10 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../database/database_helper.dart';
@@ -102,22 +100,6 @@ class GoogleDriveBackupService {
     return drive.DriveApi(httpClient);
   }
 
-  /// Serialises all database tables into an indented JSON string.
-  Future<String> _buildJson() async {
-    final db = await DatabaseHelper.instance.database;
-    final payload = <String, dynamic>{
-      'version': 1,
-      'exportedAt': DateTime.now().toIso8601String(),
-      'cars': await db.query('cars'),
-      'trips': await db.query('trips'),
-      'service_records': await db.query('service_records'),
-      'goals': await db.query('goals'),
-      'insurance_policies': await db.query('insurance_policies'),
-      'trailers': await db.query('trailers'),
-    };
-    return const JsonEncoder.withIndent('  ').convert(payload);
-  }
-
   // ───────────────────────── BACKUP ─────────────────────────────
 
   /// Exports all data to JSON and uploads it to Drive (appDataFolder).
@@ -126,7 +108,7 @@ class GoogleDriveBackupService {
   /// Throws on auth failure or Drive API error.
   Future<void> backupToDrive() async {
     final api = await _getApi();
-    final jsonStr = await _buildJson();
+    final jsonStr = await BackupService.instance.exportBackupJson();
     final bytes = utf8.encode(jsonStr);
 
     // Check for an existing backup file so we can update it (keeps 1 copy).
@@ -192,13 +174,7 @@ class GoogleDriveBackupService {
     }
     final jsonStr = utf8.decode(chunks);
 
-    // Write to a temporary file and delegate to the existing import logic.
-    final dir = await getTemporaryDirectory();
-    final tmp = File('${dir.path}/drivedata_drive_restore.json');
-    await tmp.writeAsString(jsonStr);
-    final result = await BackupService.instance.importBackup(tmp.path);
-    await tmp.delete();
-    return result;
+    return BackupService.instance.importBackupJson(jsonStr);
   }
 
   /// Returns the `modifiedTime` of the backup on Drive, or `null` if no

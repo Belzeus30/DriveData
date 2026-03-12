@@ -93,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (ctx) => AlertDialog(
         title: const Text('Obnovit zálohu?'),
         content: const Text(
-          'Tato akce SMAŽE všechna aktuální data (jízdy, auta, servis, pojistky) '
+          'Tato akce SMAŽE všechna aktuální data (jízdy, vozidla, servis, pojistky) '
           'a nahradí je daty ze zálohy.\n\nFotky a PDF přílohy NEJSOU součástí zálohy.',
         ),
         actions: [
@@ -248,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Text('Export a import', style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: 4),
                   Text(
-                    'Záloha obsahuje všechna auta, jízdy, servisní záznamy a pojistky. '
+                    'Záloha obsahuje všechna vozidla, jízdy, servisní záznamy a pojistky. '
                     'Fotky a přílohy (PDF) zálohovány nejsou.',
                     style: Theme.of(context)
                         .textTheme

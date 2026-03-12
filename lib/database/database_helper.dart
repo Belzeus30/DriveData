@@ -14,7 +14,7 @@ import '../models/trailer.dart';
 /// **Tables:** `cars`, `trips`, `service_records`, `goals`,
 /// `insurance_policies`, `trailers`.
 ///
-/// **Schema version:** 10 (see [_upgradeDB] for migration history).
+/// **Schema version:** 11 (see [_upgradeDB] for migration history).
 /// All migrations are additive (ALTER TABLE or CREATE TABLE); a full
 /// drop-and-recreate is only performed for upgrades from v1, which predated
 /// `service_records` and `goals`.
@@ -38,7 +38,7 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
     return await openDatabase(
-        path, version: 10, onCreate: _createDB, onUpgrade: _upgradeDB);
+        path, version: 11, onCreate: _createDB, onUpgrade: _upgradeDB);
   }
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -93,12 +93,20 @@ class DatabaseHelper {
       await db.execute(
           'ALTER TABLE trips ADD COLUMN trailerId TEXT');
     }
+    if (oldVersion < 11) {
+      // v11: vehicle type (car vs motorcycle) and optional license plate
+      await db.execute(
+          "ALTER TABLE cars ADD COLUMN vehicleType TEXT NOT NULL DEFAULT 'Auto'");
+      await db.execute(
+          'ALTER TABLE cars ADD COLUMN spz TEXT');
+    }
   }
 
   Future _createDB(Database db, int version) async {
     await db.execute('''
       CREATE TABLE cars (
         id TEXT PRIMARY KEY,
+        vehicleType TEXT NOT NULL DEFAULT 'Auto',
         make TEXT NOT NULL,
         model TEXT NOT NULL,
         year INTEGER NOT NULL,
@@ -107,6 +115,7 @@ class DatabaseHelper {
         engineVolume REAL NOT NULL,
         enginePower INTEGER NOT NULL,
         typicalConsumption REAL,
+        spz TEXT,
         note TEXT
       )
     ''');

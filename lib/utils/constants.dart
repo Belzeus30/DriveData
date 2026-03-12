@@ -4,6 +4,11 @@
 /// All label and icon maps use English keys (matching the stored DB values)
 /// and localised (Czech) display strings for the app UI.
 class AppConstants {
+  static const List<String> vehicleTypes = [
+    'Auto',
+    'Motorka / Skútr',
+  ];
+
   static const List<String> fuelTypes = [
     'Benzín',
     'Diesel',

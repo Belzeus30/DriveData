@@ -12,6 +12,7 @@ import '../../providers/car_provider.dart';
 import '../../providers/insurance_provider.dart';
 import '../../services/notification_service.dart';
 import '../../utils/constants.dart';
+import '../../widgets/vehicle_filter_widgets.dart';
 import 'travel_insurance_info_screen.dart';
 
 /// Form screen for creating or editing an [InsurancePolicy].
@@ -153,7 +154,7 @@ class _AddEditInsuranceScreenState extends State<AddEditInsuranceScreen> {
 
       final insuranceProvider = context.read<InsuranceProvider>();
       final carName = policy.carId != null
-          ? (context.read<CarProvider>().getCarById(policy.carId!)?.fullName ?? 'auto')
+          ? (context.read<CarProvider>().getCarById(policy.carId!)?.fullName ?? 'vozidlo')
           : 'osobní';
 
       InsurancePolicy savedPolicy;
@@ -238,8 +239,12 @@ class _AddEditInsuranceScreenState extends State<AddEditInsuranceScreen> {
                   ),
                   const SizedBox(height: 12),
                   if (!isTravel) ...[
-                    _CarDropdown(
-                      carId: _carId,
+                    VehicleDropdownField(
+                      vehicles: context.watch<CarProvider>().cars,
+                      value: _carId,
+                      labelText: 'Přiřadit k vozidlu',
+                      emptyOptionText: 'Osobní / bez vozidla',
+                      prefixIcon: const Icon(Icons.directions_car_outlined),
                       onChanged: (v) => setState(() => _carId = v),
                     ),
                     const SizedBox(height: 12),
@@ -572,29 +577,6 @@ class _TypeChips extends StatelessWidget {
         'travel' => 'Cestovní',
         _ => 'Jiné',
       };
-}
-
-class _CarDropdown extends StatelessWidget {
-  final String? carId;
-  final ValueChanged<String?> onChanged;
-  const _CarDropdown({required this.carId, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    final cars = context.watch<CarProvider>().cars;
-    return DropdownButtonFormField<String?>(
-      initialValue: carId,
-      decoration: const InputDecoration(
-        labelText: 'Přiřadit k autu',
-        prefixIcon: Icon(Icons.directions_car_outlined),
-      ),
-      items: [
-        const DropdownMenuItem(value: null, child: Text('Osobní / bez auta')),
-        ...cars.map((c) => DropdownMenuItem(value: c.id, child: Text(c.fullName))),
-      ],
-      onChanged: onChanged,
-    );
-  }
 }
 
 class _DateRow extends StatelessWidget {

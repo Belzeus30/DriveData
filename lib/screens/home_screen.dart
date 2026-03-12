@@ -20,7 +20,7 @@ import '../services/google_drive_backup_service.dart';
 /// Shared navigation data — used by both NavigationRail (wide) and NavigationBar (narrow).
 const _navItems = [
   (icon: Icons.directions_car_outlined, active: Icons.directions_car, label: 'Jízdy'),
-  (icon: Icons.garage_outlined, active: Icons.garage, label: 'Auta'),
+  (icon: Icons.garage_outlined, active: Icons.garage, label: 'Vozidla'),
   (icon: Icons.rv_hookup_outlined, active: Icons.rv_hookup, label: 'Vozíky'),
   (icon: Icons.build_circle_outlined, active: Icons.build_circle, label: 'Servis'),
   (icon: Icons.shield_outlined, active: Icons.shield, label: 'Pojistky'),

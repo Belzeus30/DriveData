@@ -65,13 +65,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   child: DropdownButtonFormField<String?>(
                     initialValue: _selectedCarId,
                     decoration: InputDecoration(
-                      labelText: 'Auto',
+                      labelText: 'Vozidlo',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     items: [
-                      const DropdownMenuItem(value: null, child: Text('Všechna auta')),
+                      const DropdownMenuItem(value: null, child: Text('Všechna vozidla')),
                       ...cars.map((c) => DropdownMenuItem(value: c.id, child: Text(c.fullName))),
                     ],
                     onChanged: (v) {
@@ -245,7 +245,7 @@ class _TcoSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Celkové n\u00e1klady na auto (TCO)',
+        Text('Celkové n\u00e1klady na vozidlo (TCO)',
             style: theme.textTheme.titleSmall
                 ?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),

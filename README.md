@@ -9,6 +9,7 @@ DriveData je mobilní Flutter aplikace pro řidiče, kteří chtějí mít přeh
 ## ✨ Funkce
 
 ### 🛣️ Jízdy
+
 - Záznam každé jízdy: vzdálenost, čas, typ trasy, počasí, hustota provozu
 - Spotřeba paliva – zadání z palubního počítače nebo výpočet z tankování
 - Náklady na km (Kč/km)
@@ -17,40 +18,51 @@ DriveData je mobilní Flutter aplikace pro řidiče, kteří chtějí mít přeh
 - Filtrování jízd podle vozidla
 
 ### 📊 Skóre řidiče
+
 Každá jízda dostane objektivní hodnocení 1–10 ze tří složek:
+
 - **Plynulost** – poměr průměrné a maximální rychlosti (s korekcí na hustotu provozu)
-- **Předvídavost** – skutečná spotřeba vs. historický průměr auta (s korekcí na provoz)
+- **Předvídavost** – skutečná spotřeba vs. historický průměr vozidla (s korekcí na provoz)
 - **Dodržování limitů** – max. rychlost vs. limit pro typ trasy / s vozíkem
 
 ### 📈 Analýza
+
 - Trend skóre řidiče (posledních 20 jízd)
 - Trend spotřeby paliva (fill-to-fill metoda)
 - Spotřeba podle typu trasy
 - Přehledové karty: celkem km, náklady, průměrná spotřeba, průměrné skóre
 
-### 🚙 Auta
-- Evidence vozidel (značka, model, rok, typ paliva, SPZ, fotka)
+### 🚙 Vozidla
+
+- Evidence vozidel (značka, model, rok, typ paliva, SPZ)
+- Podpora aut i motorek / skútrů
+- SPZ povinná pro auta, volitelná pro starší motorky a skútry bez registrace
 - Typická spotřeba z technického průkazu jako výchozí baseline
 - Statistiky na přehledové kartě (celkem km, spotřeba, náklady)
 
 ### 🔧 Servis
+
 - Historie servisních záznamů s přílohami (fotky, PDF)
 - Připomínky: datum nebo km interval (push notifikace)
 - Filtrování podle vozidla
 
 ### 🛡️ Pojistky
+
 - Evidence pojistek s datem platnosti a výší pojistného
 - Upozornění na blížící se expiraci
 
 ### 🎯 Cíle
+
 - Vlastní cíle (km za měsíc/rok, max. spotřeba, max. náklady atd.)
 - Progress bar s aktuálním plněním
 
 ### 🚚 Vozíky / Přívěsy
+
 - Evidence přívěsů, připojení k jízdám
 - Automatická úprava rychlostních limitů (CZ zákon: 80 km/h dálnice, 50 město, 30 terén)
 
 ### ☁️ Google Drive záloha
+
 - Přihlášení přes Google účet
 - Záloha celé databáze do privátního `appDataFolder` na Google Drive
 - Obnova zálohy z Drive na nové zařízení
@@ -58,6 +70,7 @@ Každá jízda dostane objektivní hodnocení 1–10 ze tří složek:
 - Automatické tiché přihlášení při startu aplikace
 
 ### ⚙️ Nastavení
+
 - Světlé / Tmavé téma + výběr barevného schématu
 - Lokální záloha a obnova dat (export/import SQLite DB)
 - Google Drive záloha
@@ -67,7 +80,7 @@ Každá jízda dostane objektivní hodnocení 1–10 ze tří složek:
 ## 🛠️ Technický stack
 
 | Vrstva | Technologie |
-|--------|------------|
+| ------ | ---------- |
 | Framework | [Flutter](https://flutter.dev) 3.x |
 | State management | [Provider](https://pub.dev/packages/provider) |
 | Databáze | [sqflite](https://pub.dev/packages/sqflite) (lokální SQLite) |
@@ -85,6 +98,7 @@ Každá jízda dostane objektivní hodnocení 1–10 ze tří složek:
 ## 🚀 Spuštění
 
 ### Požadavky
+
 - Flutter SDK >= 3.0.0
 - Android Studio / VS Code s Flutter extension
 - Android emulator nebo fyzické zařízení (Android 7+)
@@ -110,7 +124,7 @@ APK najdeš v `build/app/outputs/flutter-apk/app-release.apk`.
 
 ## 📁 Struktura projektu
 
-```
+```text
 lib/
 ├── database/
 │   └── database_helper.dart     # SQLite – veškerá práce s DB
@@ -137,7 +151,7 @@ lib/
 
 ## 📸 Screenshots
 
-*Brzy doplním*
+Brzy doplním.
 
 ---
 

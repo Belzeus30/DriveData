@@ -24,25 +24,49 @@ class BackupService {
   BackupService._();
   static final BackupService instance = BackupService._();
 
+  static const int backupVersion = 1;
+  static const List<String> _requiredTables = [
+    'cars',
+    'trips',
+    'service_records',
+    'goals',
+    'insurance_policies',
+  ];
+  static const List<String> _optionalTables = ['trailers'];
+  static const List<String> _allTables = [
+    ..._requiredTables,
+    ..._optionalTables,
+  ];
+
+  Future<Map<String, dynamic>> buildBackupPayload() async {
+    final db = await DatabaseHelper.instance.database;
+    final payload = <String, dynamic>{
+      'version': backupVersion,
+      'exportedAt': DateTime.now().toIso8601String(),
+    };
+
+    for (final table in _allTables) {
+      payload[table] = await db.query(table);
+    }
+
+    return payload;
+  }
+
+  String encodeBackupPayload(Map<String, dynamic> payload) {
+    return const JsonEncoder.withIndent('  ').convert(payload);
+  }
+
+  Future<String> exportBackupJson() async {
+    final payload = await buildBackupPayload();
+    return encodeBackupPayload(payload);
+  }
+
   // ─────────────────────────── EXPORT ───────────────────────────
 
   /// Exports all data to JSON and opens the system share dialog
   /// (save to disk, send by e-mail, upload to Google Drive, etc.).
   Future<void> exportBackup() async {
-    final db = await DatabaseHelper.instance.database;
-
-    final backup = <String, dynamic>{
-      'version': 1,
-      'exportedAt': DateTime.now().toIso8601String(),
-      'cars': await db.query('cars'),
-      'trips': await db.query('trips'),
-      'service_records': await db.query('service_records'),
-      'goals': await db.query('goals'),
-      'insurance_policies': await db.query('insurance_policies'),
-      'trailers': await db.query('trailers'),
-    };
-
-    final json = const JsonEncoder.withIndent('  ').convert(backup);
+    final json = await exportBackupJson();
     final dir = await getTemporaryDirectory();
     final now = DateTime.now();
     final stamp = now.millisecondsSinceEpoch;
@@ -55,8 +79,8 @@ class BackupService {
     );
 
     // Delete temporary file after successful share
-    if (result.status == ShareResultStatus.success && file.existsSync()) {
-      file.deleteSync();
+    if (result.status == ShareResultStatus.success && await file.exists()) {
+      await file.delete();
     }
   }
 
@@ -66,15 +90,16 @@ class BackupService {
   /// Returns a summary string with the counts of restored records.
   Future<String> importBackup(String filePath) async {
     final file = File(filePath);
-    if (!file.existsSync()) throw Exception('File not found: $filePath');
+    if (!await file.exists()) throw Exception('File not found: $filePath');
 
+    return importBackupJson(await file.readAsString());
+  }
+
+  Future<String> importBackupJson(String jsonString) async {
     final Map<String, dynamic> backup =
-        jsonDecode(await file.readAsString());
+        Map<String, dynamic>.from(jsonDecode(jsonString) as Map);
 
-    final version = backup['version'] as int?;
-    if (version == null || version != 1) {
-      throw Exception('Unsupported or missing backup version (found: $version)');
-    }
+    _validateBackupPayload(backup);
 
     final db = await DatabaseHelper.instance.database;
 
@@ -88,29 +113,15 @@ class BackupService {
       await txn.delete('cars');
 
       final batch = txn.batch();
-      for (final row in (backup['cars'] as List<dynamic>)) {
-        batch.insert('cars', Map<String, dynamic>.from(row as Map),
-            conflictAlgorithm: ConflictAlgorithm.replace);
-      }
-      for (final row in (backup['trips'] as List<dynamic>)) {
-        batch.insert('trips', Map<String, dynamic>.from(row as Map),
-            conflictAlgorithm: ConflictAlgorithm.replace);
-      }
-      for (final row in (backup['service_records'] as List<dynamic>)) {
-        batch.insert('service_records', Map<String, dynamic>.from(row as Map),
-            conflictAlgorithm: ConflictAlgorithm.replace);
-      }
-      for (final row in (backup['goals'] as List<dynamic>)) {
-        batch.insert('goals', Map<String, dynamic>.from(row as Map),
-            conflictAlgorithm: ConflictAlgorithm.replace);
-      }
-      for (final row in (backup['insurance_policies'] as List<dynamic>)) {
-        batch.insert('insurance_policies', Map<String, dynamic>.from(row as Map),
-            conflictAlgorithm: ConflictAlgorithm.replace);
-      }
-      for (final row in ((backup['trailers'] as List<dynamic>?) ?? [])) {
-        batch.insert('trailers', Map<String, dynamic>.from(row as Map),
-            conflictAlgorithm: ConflictAlgorithm.replace);
+      for (final table in _allTables) {
+        final rows = (backup[table] as List<dynamic>?) ?? const [];
+        for (final row in rows) {
+          batch.insert(
+            table,
+            Map<String, dynamic>.from(row as Map),
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
       }
       await batch.commit(noResult: true);
     });
@@ -119,8 +130,28 @@ class BackupService {
     final tripCount = (backup['trips'] as List).length;
     final serviceCount = (backup['service_records'] as List).length;
     final insuranceCount = (backup['insurance_policies'] as List).length;
-    final trailerCount  = ((backup['trailers'] as List?) ?? []).length;
+    final trailerCount = ((backup['trailers'] as List?) ?? const []).length;
 
     return 'Restored: $carCount cars • $tripCount trips • $serviceCount service records • $insuranceCount policies • $trailerCount trailers';
+  }
+
+  void _validateBackupPayload(Map<String, dynamic> backup) {
+    final version = backup['version'] as int?;
+    if (version == null || version != backupVersion) {
+      throw Exception('Unsupported or missing backup version (found: $version)');
+    }
+
+    for (final table in _requiredTables) {
+      if (backup[table] is! List<dynamic>) {
+        throw Exception('Backup is missing required table: $table');
+      }
+    }
+
+    for (final table in _optionalTables) {
+      final value = backup[table];
+      if (value != null && value is! List<dynamic>) {
+        throw Exception('Backup has invalid table payload: $table');
+      }
+    }
   }
 }

@@ -7,6 +7,7 @@ import '../../providers/car_provider.dart';
 import '../../providers/trailer_provider.dart';
 import '../../providers/trip_provider.dart';
 import '../../utils/constants.dart';
+import '../../widgets/vehicle_filter_widgets.dart';
 import 'add_edit_trip_screen.dart';
 import '../settings/settings_screen.dart';
 
@@ -44,18 +45,10 @@ class _TripsScreenState extends State<TripsScreen> {
             builder: (context, carProvider, _) {
               final cars = carProvider.cars;
               if (cars.isEmpty) return const SizedBox.shrink();
-              final isFiltered = _carFilterId != null;
-              return PopupMenuButton<String>(
-                icon: Icon(
-                  isFiltered ? Icons.filter_alt : Icons.filter_list,
-                  color: isFiltered ? Theme.of(context).colorScheme.primary : null,
-                ),
-                tooltip: isFiltered ? 'Filtr aktivní — klikni pro změnu' : 'Filtrovat podle auta',
-                onSelected: (v) => setState(() => _carFilterId = v == '__all__' ? null : v),
-                itemBuilder: (_) => [
-                  const PopupMenuItem(value: '__all__', child: Text('Všechna auta')),
-                  ...cars.map((c) => PopupMenuItem(value: c.id, child: Text(c.fullName))),
-                ],
+              return VehicleFilterMenuButton(
+                vehicles: cars,
+                selectedVehicleId: _carFilterId,
+                onSelected: (carId) => setState(() => _carFilterId = carId),
               );
             },
           ),
@@ -85,7 +78,10 @@ class _TripsScreenState extends State<TripsScreen> {
             return Column(
               children: [
                 if (activeCarName != null)
-                  _FilterBanner(carName: activeCarName, onClear: () => setState(() => _carFilterId = null)),
+                  ActiveVehicleFilterBanner(
+                    vehicleName: activeCarName,
+                    onClear: () => setState(() => _carFilterId = null),
+                  ),
                 Expanded(
                   child: Center(
                     child: Column(
@@ -96,12 +92,12 @@ class _TripsScreenState extends State<TripsScreen> {
                           size: 72, color: Colors.grey[400]),
                         const SizedBox(height: 16),
                         Text(
-                          noCars ? 'Nejprve přidej auto' : 'Žádné jízdy',
+                          noCars ? 'Nejprve přidej vozidlo' : 'Žádné jízdy',
                           style: Theme.of(context).textTheme.titleMedium),
                         const SizedBox(height: 8),
                         Text(
                           noCars
-                              ? 'Přejdi na záložku Auta a přidej své vozidlo.\nPak budeš moci přidávat jízdy.'
+                              ? 'Přejdi na záložku Vozidla a přidej své vozidlo.\nPak budeš moci přidávat jízdy.'
                               : 'Přidej první jízdu kliknutím na +',
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.grey[600])),
@@ -117,7 +113,10 @@ class _TripsScreenState extends State<TripsScreen> {
           return Column(
             children: [
               if (activeCarName != null)
-                _FilterBanner(carName: activeCarName, onClear: () => setState(() => _carFilterId = null)),
+                ActiveVehicleFilterBanner(
+                  vehicleName: activeCarName,
+                  onClear: () => setState(() => _carFilterId = null),
+                ),
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.all(8),
@@ -156,48 +155,6 @@ class _TripsScreenState extends State<TripsScreen> {
   }
 }
 
-/// Thin coloured banner displayed below the AppBar when a car filter is active.
-///
-/// Shows the active car name and a "Zrušit filtr" button that invokes [onClear].
-class _FilterBanner extends StatelessWidget {
-  /// Display name of the car currently being filtered.
-  final String carName;
-  /// Callback to clear the active filter.
-  final VoidCallback onClear;
-  const _FilterBanner({required this.carName, required this.onClear});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Material(
-      color: cs.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        child: Row(
-          children: [
-            Icon(Icons.filter_alt, size: 16, color: cs.onPrimaryContainer),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Filtr: $carName',
-                style: TextStyle(color: cs.onPrimaryContainer, fontWeight: FontWeight.w600),
-              ),
-            ),
-            TextButton(
-              onPressed: onClear,
-              style: TextButton.styleFrom(
-                foregroundColor: cs.onPrimaryContainer,
-                visualDensity: VisualDensity.compact,
-              ),
-              child: const Text('Zrušit filtr'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 /// Card widget representing a single [Trip] in the trips list.
 ///
 /// - Shows a coloured left strip whose colour matches the route type.
@@ -230,7 +187,7 @@ class _TripCard extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final score = trip.drivingScoreFor(baseline);
-    final carName = car?.fullName ?? 'Neznámé auto';
+    final carName = car?.fullName ?? 'Neznámé vozidlo';
     final dateStr = _dateFmt.format(trip.date);
     final routeColor = _routeColors[trip.routeType] ?? const Color(0xFF607D8B);
     final scoreColor = score == null

@@ -32,10 +32,14 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
   late TextEditingController _powerCtrl;
   late TextEditingController _noteCtrl;
   late TextEditingController _typicalConsumptionCtrl;
+  late TextEditingController _spzCtrl;
   late String _fuelType;
+  late String _vehicleType;
 
   /// `true` when editing an existing car, `false` when creating a new one.
   bool get isEditing => widget.car != null;
+
+  bool get _isSpzRequired => _vehicleType == 'Auto';
 
   /// Populates text controllers from [widget.car] when editing.
   @override
@@ -50,13 +54,15 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
     _powerCtrl = TextEditingController(text: c?.enginePower.toString() ?? '');
     _noteCtrl = TextEditingController(text: c?.note ?? '');
     _typicalConsumptionCtrl = TextEditingController(text: c?.typicalConsumption?.toString() ?? '');
+    _spzCtrl = TextEditingController(text: c?.spz ?? '');
     _fuelType = c?.fuelType ?? AppConstants.fuelTypes.first;
+    _vehicleType = c?.vehicleType ?? 'Auto';
   }
 
   /// Disposes all [TextEditingController]s.
   @override
   void dispose() {
-    for (final ctrl in [_makeCtrl, _modelCtrl, _yearCtrl, _tankCtrl, _engineVolCtrl, _powerCtrl, _noteCtrl, _typicalConsumptionCtrl]) {
+    for (final ctrl in [_makeCtrl, _modelCtrl, _yearCtrl, _tankCtrl, _engineVolCtrl, _powerCtrl, _noteCtrl, _typicalConsumptionCtrl, _spzCtrl]) {
       ctrl.dispose();
     }
     super.dispose();
@@ -66,9 +72,11 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
   /// then pops the route on success.
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final spzValue = _spzCtrl.text.trim().isEmpty ? null : _spzCtrl.text.trim().toUpperCase();
     final provider = context.read<CarProvider>();
     if (isEditing) {
       await provider.updateCar(widget.car!.copyWith(
+        vehicleType: _vehicleType,
         make: _makeCtrl.text.trim(),
         model: _modelCtrl.text.trim(),
         year: int.parse(_yearCtrl.text),
@@ -76,11 +84,13 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
         tankCapacity: double.parse(_tankCtrl.text),
         engineVolume: double.parse(_engineVolCtrl.text),
         enginePower: int.parse(_powerCtrl.text),
+        spz: spzValue,
         note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
         typicalConsumption: double.tryParse(_typicalConsumptionCtrl.text),
       ));
     } else {
       await provider.addCar(
+        vehicleType: _vehicleType,
         make: _makeCtrl.text.trim(),
         model: _modelCtrl.text.trim(),
         year: int.parse(_yearCtrl.text),
@@ -88,6 +98,7 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
         tankCapacity: double.parse(_tankCtrl.text),
         engineVolume: double.parse(_engineVolCtrl.text),
         enginePower: int.parse(_powerCtrl.text),
+        spz: spzValue,
         note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
         typicalConsumption: double.tryParse(_typicalConsumptionCtrl.text),
       );
@@ -99,7 +110,7 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Upravit auto' : 'Přidat auto'),
+        title: Text(isEditing ? 'Upravit vozidlo' : 'Přidat vozidlo'),
         actions: [
           TextButton(onPressed: _save, child: const Text('Uložit')),
         ],
@@ -115,6 +126,20 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
           children: [
             const _SectionHeader('Základní informace'),
             const SizedBox(height: 8),
+            // Vehicle type selector
+            SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(value: 'Auto', icon: Icon(Icons.directions_car_outlined), label: Text('Auto')),
+                ButtonSegment(value: 'Motorka / Skútr', icon: Icon(Icons.two_wheeler_outlined), label: Text('Motorka / Skútr')),
+              ],
+              selected: {_vehicleType},
+              onSelectionChanged: (s) {
+                setState(() => _vehicleType = s.first);
+                _formKey.currentState?.validate();
+              },
+              style: const ButtonStyle(visualDensity: VisualDensity.compact),
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -213,15 +238,33 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
               },
             ),
             const SizedBox(height: 24),
-            const _SectionHeader('Volitelné'),
+            const _SectionHeader('Identifikace a poznámka'),
             const SizedBox(height: 8),
+            TextFormField(
+              controller: _spzCtrl,
+              decoration: InputDecoration(
+                labelText: _isSpzRequired ? 'SPZ *' : 'SPZ',
+                hintText: '1AB 2345',
+                helperText: _isSpzRequired
+                    ? 'Povinné pro auta'
+                    : 'Nepovinné pro motorky a skútry bez SPZ',
+              ),
+              textCapitalization: TextCapitalization.characters,
+              validator: (v) {
+                if (_isSpzRequired && (v == null || v.trim().isEmpty)) {
+                  return 'SPZ je pro auto povinná';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _noteCtrl,
               decoration: const InputDecoration(labelText: 'Poznámka', hintText: 'Zimní gumy, tažné...'),
               maxLines: 2,
             ),
             const SizedBox(height: 32),
-            FilledButton(onPressed: _save, child: Text(isEditing ? 'Uložit změny' : 'Přidat auto')),
+            FilledButton(onPressed: _save, child: Text(isEditing ? 'Uložit změny' : 'Přidat vozidlo')),
           ],
         ),
           ),
