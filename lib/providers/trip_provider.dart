@@ -256,18 +256,17 @@ class TripProvider with ChangeNotifier {
 
   /// Average fuel consumption grouped by route type.
   ///
-  /// This is an approximation: the exact fill-to-fill split per route type is
-  /// not possible, so it returns a weighted average per route type across all
-  /// trips where fuel was added.
+  /// Uses [Trip.fuelConsumption] (prefers on-board computer reading, falls back
+  /// to fuelAdded ÷ distance). Values above 50 l/100 km are excluded as they
+  /// indicate a refuel stop after a very short trip rather than real consumption.
   Map<String, double> get consumptionByRouteType {
     final sums = <String, double>{};
     final counts = <String, int>{};
     for (final trip in filteredTrips) {
-      if (trip.fuelAdded != null && trip.distance > 0) {
-        final val = trip.fuelAdded! / trip.distance * 100;
-        sums[trip.routeType] = (sums[trip.routeType] ?? 0) + val;
-        counts[trip.routeType] = (counts[trip.routeType] ?? 0) + 1;
-      }
+      final val = trip.fuelConsumption;
+      if (val == null || val <= 0 || val > 50) continue;
+      sums[trip.routeType] = (sums[trip.routeType] ?? 0) + val;
+      counts[trip.routeType] = (counts[trip.routeType] ?? 0) + 1;
     }
     return {for (final key in sums.keys) key: sums[key]! / counts[key]!};
   }
