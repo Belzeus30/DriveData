@@ -43,8 +43,11 @@ class InsuranceProvider extends ChangeNotifier {
     await _db.updateInsurancePolicy(policy);
     final idx = _policies.indexWhere((p) => p.id == policy.id);
     if (idx >= 0) {
+      final validToChanged = _policies[idx].validTo != policy.validTo;
       _policies[idx] = policy;
-      _policies.sort((a, b) => a.validTo.compareTo(b.validTo));
+      if (validToChanged) {
+        _policies.sort((a, b) => a.validTo.compareTo(b.validTo));
+      }
       notifyListeners();
     }
   }
@@ -53,8 +56,12 @@ class InsuranceProvider extends ChangeNotifier {
     // Delete attachment file if present
     final policy = _policies.where((p) => p.id == id).firstOrNull;
     if (policy?.attachmentPath != null) {
-      final file = File(policy!.attachmentPath!);
-      if (file.existsSync()) file.deleteSync();
+      try {
+        final file = File(policy!.attachmentPath!);
+        if (file.existsSync()) file.deleteSync();
+      } catch (_) {
+        // Soubor mohl být přesunut nebo smazán externě — ignorujeme
+      }
     }
     await _db.deleteInsurancePolicy(id);
     await NotificationService.instance.cancelInsuranceReminder(id);

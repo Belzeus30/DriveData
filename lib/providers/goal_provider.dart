@@ -81,6 +81,7 @@ class GoalProvider with ChangeNotifier {
         ? allTrips.where((t) => t.carId == goal.carId).toList()
         : allTrips;
 
+    final now = DateTime.now();
     switch (goal.type) {
       case 'fuel':
         // Goal: reduce average consumption below targetValue l/100 km
@@ -109,7 +110,6 @@ class GoalProvider with ChangeNotifier {
 
       case 'km_month':
         // Goal: drive at least targetValue km in the current month
-        final now = DateTime.now();
         final monthTrips = trips.where((t) =>
             t.date.year == now.year && t.date.month == now.month);
         final km = monthTrips.fold(0.0, (s, t) => s + t.distance);
@@ -128,7 +128,6 @@ class GoalProvider with ChangeNotifier {
 
       case 'trips_month':
         // Goal: log at least targetValue trips in the current month
-        final now = DateTime.now();
         final count = trips.where((t) =>
             t.date.year == now.year && t.date.month == now.month).length;
         return GoalProgress(

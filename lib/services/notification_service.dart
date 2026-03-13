@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -233,8 +234,9 @@ class NotificationService {
         notificationDetails: details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
-    } catch (_) {
+    } catch (e) {
       // Fallback if exact alarm permission was not granted by the user
+      debugPrint('[NotificationService] Exact alarm nedostupný, zkouším inexact: $e');
       try {
         await _plugin.zonedSchedule(
           id: id,
@@ -244,23 +246,22 @@ class NotificationService {
           notificationDetails: details,
           androidScheduleMode: AndroidScheduleMode.inexact,
         );
-      } catch (_) {
+      } catch (e2) {
         // Notifications not supported on this device/platform — silently ignore
+        debugPrint('[NotificationService] Notifikace nelze naplánovat: $e2');
       }
     }
   }
 
   static String _fmtDate(DateTime d) => '${d.day}. ${d.month}. ${d.year}';
 
-  /// Stable positive int ID from a UUID string — service records namespace.
-  static int _serviceId(String id) => id.hashCode.abs() % 100000000;
+  /// Stable positive int ID z UUID stringu — namespace pro servisní záznamy (0–999 999).
+  static int _serviceId(String id) => id.hashCode.abs() % 1000000;
 
-  /// Stable positive int ID from a UUID string — insurance namespace.
-  /// XOR with a constant to avoid collisions with service IDs.
-  static int _insuranceId(String id) =>
-      (id.hashCode ^ 0xA5F3B1).abs() % 100000000;
+  /// Stable positive int ID z UUID stringu — namespace pro pojistky (1 000 000–1 999 999).
+  /// Oddělený rozsah zaručuje nulové kolize s ostatními namespacy.
+  static int _insuranceId(String id) => 1000000 + id.hashCode.abs() % 1000000;
 
-  /// Stable positive int ID from a UUID string — trailer namespace.
-  static int _trailerId(String id) =>
-      (id.hashCode ^ 0x3C7F29).abs() % 100000000;
+  /// Stable positive int ID z UUID stringu — namespace pro vozíky (2 000 000–2 999 999).
+  static int _trailerId(String id) => 2000000 + id.hashCode.abs() % 1000000;
 }

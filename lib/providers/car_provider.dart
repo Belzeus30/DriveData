@@ -80,16 +80,24 @@ class CarProvider with ChangeNotifier {
     for (final r in serviceRecords) {
       await NotificationService.instance.cancelServiceReminder(r.id);
       if (r.attachmentPath != null) {
-        final f = File(r.attachmentPath!);
-        if (f.existsSync()) f.deleteSync();
+        try {
+          final f = File(r.attachmentPath!);
+          if (f.existsSync()) f.deleteSync();
+        } catch (_) {
+          // Soubor mohl být přesunut nebo smazán externě — ignorujeme
+        }
       }
     }
     final insurancePolicies = await db.getInsurancePolicies(carId: id);
     for (final p in insurancePolicies) {
       await NotificationService.instance.cancelInsuranceReminder(p.id);
       if (p.attachmentPath != null) {
-        final f = File(p.attachmentPath!);
-        if (f.existsSync()) f.deleteSync();
+        try {
+          final f = File(p.attachmentPath!);
+          if (f.existsSync()) f.deleteSync();
+        } catch (_) {
+          // Soubor mohl být přesunut nebo smazán externě — ignorujeme
+        }
       }
     }
     await db.deleteCar(id);

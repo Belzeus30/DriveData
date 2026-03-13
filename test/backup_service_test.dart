@@ -4,7 +4,6 @@ import 'package:drivedata/database/database_helper.dart';
 import 'package:drivedata/services/backup_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {

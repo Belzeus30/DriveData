@@ -71,8 +71,11 @@ class ServiceProvider with ChangeNotifier {
     await DatabaseHelper.instance.updateServiceRecord(record);
     final index = _records.indexWhere((r) => r.id == record.id);
     if (index != -1) {
+      final dateChanged = _records[index].date != record.date;
       _records[index] = record;
-      _records.sort((a, b) => b.date.compareTo(a.date));
+      if (dateChanged) {
+        _records.sort((a, b) => b.date.compareTo(a.date));
+      }
       notifyListeners();
     }
   }
@@ -81,8 +84,12 @@ class ServiceProvider with ChangeNotifier {
     // Delete attachment file if present
     final record = _records.where((r) => r.id == id).firstOrNull;
     if (record?.attachmentPath != null) {
-      final file = File(record!.attachmentPath!);
-      if (file.existsSync()) file.deleteSync();
+      try {
+        final file = File(record!.attachmentPath!);
+        if (file.existsSync()) file.deleteSync();
+      } catch (_) {
+        // Soubor mohl být přesunut nebo smazán externě — ignorujeme
+      }
     }
     await DatabaseHelper.instance.deleteServiceRecord(id);
     await NotificationService.instance.cancelServiceReminder(id);

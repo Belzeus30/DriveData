@@ -48,7 +48,8 @@ class ThemeProvider with ChangeNotifier {
     final colorValue =
         prefs.getInt(_kSeedColor) ?? const Color(0xFF1565C0).toARGB32();
     _themeMode = ThemeMode.values[modeIndex];
-    _seedColor = Color(colorValue);
+    final loaded = Color(colorValue);
+    _seedColor = availableColors.contains(loaded) ? loaded : availableColors.first;
     notifyListeners();
   }
 
@@ -60,6 +61,7 @@ class ThemeProvider with ChangeNotifier {
   }
 
   Future<void> setSeedColor(Color color) async {
+    if (!availableColors.contains(color)) return;
     _seedColor = color;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();

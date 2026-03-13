@@ -121,8 +121,11 @@ class TripProvider with ChangeNotifier {
     await DatabaseHelper.instance.updateTrip(trip);
     final index = _trips.indexWhere((t) => t.id == trip.id);
     if (index != -1) {
+      final dateChanged = _trips[index].date != trip.date;
       _trips[index] = trip;
-      _trips.sort((a, b) => b.date.compareTo(a.date));
+      if (dateChanged) {
+        _trips.sort((a, b) => b.date.compareTo(a.date));
+      }
       _baselinePerCarCache = null;
       _latestOdometerCache = null;
       notifyListeners();
