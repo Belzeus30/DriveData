@@ -200,18 +200,33 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _engineVolCtrl,
-                    decoration: const InputDecoration(labelText: 'Objem motoru (l)', hintText: '1.6'),
+                    decoration: InputDecoration(
+                      labelText: 'Objem motoru (l)',
+                      hintText: _vehicleType == 'Motorka / Skútr' ? '0.05' : '1.6',
+                      helperText: _vehicleType == 'Motorka / Skútr' ? '49 cm³ = 0.049 l' : null,
+                    ),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    validator: (v) => double.tryParse(v ?? '') == null ? 'Neplatná hodnota' : null,
+                    validator: (v) {
+                      final n = double.tryParse(v ?? '');
+                      if (n == null || n <= 0) return 'Zadej kladné číslo (v litrech)';
+                      return null;
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextFormField(
                     controller: _powerCtrl,
-                    decoration: const InputDecoration(labelText: 'Výkon (kW)', hintText: '85'),
+                    decoration: InputDecoration(
+                      labelText: 'Výkon (kW)',
+                      hintText: _vehicleType == 'Motorka / Skútr' ? '2' : '85',
+                    ),
                     keyboardType: TextInputType.number,
-                    validator: (v) => int.tryParse(v ?? '') == null ? 'Neplatná hodnota' : null,
+                    validator: (v) {
+                      final n = int.tryParse(v ?? '');
+                      if (n == null || n <= 0) return 'Zadej celé číslo > 0';
+                      return null;
+                    },
                   ),
                 ),
               ],
@@ -219,9 +234,16 @@ class _AddEditCarScreenState extends State<AddEditCarScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _tankCtrl,
-              decoration: const InputDecoration(labelText: 'Objem nádrže (l)', hintText: '55'),
+              decoration: InputDecoration(
+                labelText: 'Objem nádrže (l)',
+                hintText: _vehicleType == 'Motorka / Skútr' ? '4.5' : '55',
+              ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              validator: (v) => double.tryParse(v ?? '') == null ? 'Neplatná hodnota' : null,
+              validator: (v) {
+                final n = double.tryParse(v ?? '');
+                if (n == null || n <= 0) return 'Zadej kladné číslo';
+                return null;
+              },
             ),
             const SizedBox(height: 12),
             TextFormField(
