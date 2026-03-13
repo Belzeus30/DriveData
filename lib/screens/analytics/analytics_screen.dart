@@ -395,6 +395,8 @@ class _TcoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = ThemeData.estimateBrightnessForColor(color);
+    final textColor = brightness == Brightness.dark ? Colors.white : Colors.black87;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -407,10 +409,10 @@ class _TcoCard extends StatelessWidget {
             FittedBox(
               child: Text(
                   '${_fmt.format(value)} Kč',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 13)),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 13, color: textColor)),
             ),
-            Text(label, style: const TextStyle(fontSize: 10)),
+            Text(label, style: TextStyle(fontSize: 10, color: textColor)),
           ],
         ),
       ),
@@ -523,6 +525,8 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = ThemeData.estimateBrightnessForColor(bgColor);
+    final textColor = brightness == Brightness.dark ? Colors.white : Colors.black87;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -533,17 +537,16 @@ class _StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(icon, size: 20),
+          Icon(icon, size: 20, color: textColor),
           const SizedBox(height: 4),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(value,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
           ),
           Text(label,
-              style: const TextStyle(fontSize: 11),
+              style: TextStyle(fontSize: 11, color: textColor),
               maxLines: 2,
               overflow: TextOverflow.ellipsis),
         ],
