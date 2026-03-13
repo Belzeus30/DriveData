@@ -6,6 +6,7 @@ import '../../models/insurance_policy.dart';
 import '../../providers/car_provider.dart';
 import '../../providers/insurance_provider.dart';
 import '../../utils/constants.dart';
+import '../../widgets/section_header.dart';
 import 'add_edit_insurance_screen.dart';
 import 'travel_insurance_info_screen.dart';
 import '../settings/settings_screen.dart';
@@ -89,10 +90,8 @@ class InsurancesContent extends StatelessWidget {
       children: [
         // ---- REMINDERS ----
         if (reminders.isNotEmpty) ...[
-          Text('⚠️ Vyžadují pozornost',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.error)),
-          const SizedBox(height: 8),
+          SectionHeader(title: 'Vyžadují pozornost', icon: Icons.warning_rounded,
+              padding: const EdgeInsets.only(bottom: 8)),
           ...reminders.map((r) => _PolicyCard(
                 policy: r.policy,
                 carName: _carName(r.policy, carProvider),
@@ -109,10 +108,8 @@ class InsurancesContent extends StatelessWidget {
 
         // ---- ACTIVE ----
         if (policies.any((p) => p.isActive && !reminderIds.contains(p.id))) ...[
-          Text('✅ Aktivní pojistky',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: Colors.green.shade700)),
-          const SizedBox(height: 8),
+          SectionHeader(title: 'Aktivní pojistky', icon: Icons.shield_outlined,
+              padding: const EdgeInsets.only(bottom: 8)),
           ...policies
               .where((p) => p.isActive && !reminderIds.contains(p.id))
               .map((p) => _PolicyCard(
@@ -126,11 +123,8 @@ class InsurancesContent extends StatelessWidget {
 
         // ---- EXPIRED ----
         if (policies.any((p) => p.isExpired)) ...[
-          const SizedBox(height: 8),
-          Text('🗄️ Prošlé',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          const SizedBox(height: 4),
+          SectionHeader(title: 'Prošlé pojistky', icon: Icons.archive_outlined,
+              padding: const EdgeInsets.only(top: 8, bottom: 4)),
           ...policies
               .where((p) => p.isExpired)
               .map((p) => _PolicyCard(
@@ -185,7 +179,7 @@ class InsurancesContent extends StatelessWidget {
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child:
-                  Text('Smazat', style: TextStyle(color: Colors.red.shade700))),
+                  Text('Smazat', style: TextStyle(color: Theme.of(context).colorScheme.error))),
         ],
       ),
     );
@@ -242,7 +236,7 @@ class _PolicyCard extends StatelessWidget {
 
     Color? cardColor;
     if (isOverdue) cardColor = cs.errorContainer;
-    if (isDueSoon) cardColor = Colors.orange.shade50;
+    if (isDueSoon) cardColor = cs.tertiaryContainer;
 
     return Dismissible(
       key: Key(policy.id),
@@ -269,7 +263,7 @@ class _PolicyCard extends StatelessWidget {
             AppConstants.insuranceTypeIcons[policy.type] ?? '📜',
             style: TextStyle(
                 fontSize: 28,
-                color: dimmed ? Colors.grey : null),
+                color: dimmed ? cs.onSurfaceVariant : null),
           ),
           title: Text(
             '${AppConstants.insuranceTypeLabels[policy.type]} — ${policy.provider}',
@@ -284,9 +278,9 @@ class _PolicyCard extends StatelessWidget {
                 'Platnost do: ${_dateFmt.format(policy.validTo)}',
                 style: TextStyle(
                     color: isOverdue
-                        ? cs.error
+                        ? cs.onErrorContainer
                         : isDueSoon
-                            ? Colors.orange.shade800
+                            ? cs.onTertiaryContainer
                             : null,
                     fontWeight:
                         (isOverdue || isDueSoon) ? FontWeight.bold : null),
@@ -301,7 +295,7 @@ class _PolicyCard extends StatelessWidget {
               if (isDueSoon)
                 Text('⏳ Vyprší za ${policy.daysUntilExpiry} dní',
                     style: TextStyle(
-                        color: Colors.orange.shade800,
+                        color: cs.onTertiaryContainer,
                         fontSize: 12, fontWeight: FontWeight.bold)),
             ],
           ),

@@ -117,8 +117,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   minY: 1,
                   maxY: 10,
                   yInterval: 2,
-                  color: Colors.blue,
-                  dotColor: Colors.blueAccent,
+                  color: Theme.of(context).colorScheme.primary,
+                  dotColor: Theme.of(context).colorScheme.primary,
                 ),
               ),
               const SizedBox(height: 24),
@@ -132,8 +132,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 height: 180,
                 child: _LineChartWidget(
                   data: fuelTrend,
-                  color: Colors.orange,
-                  dotColor: Colors.deepOrange,
+                  color: Theme.of(context).colorScheme.tertiary,
+                  dotColor: Theme.of(context).colorScheme.tertiary,
                 ),
               ),
               const SizedBox(height: 24),
@@ -251,17 +251,17 @@ class _TcoSection extends StatelessWidget {
                 ?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
         Text('Palivo + servis + pojistky',
-            style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+            style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurfaceVariant)),
         const SizedBox(height: 12),
 
         // -- Shrnut\u00ed karet --
         Row(
           children: [
-            _TcoCard('Palivo', totalFuel, Colors.orange.shade100),
+            _TcoCard('Palivo', totalFuel, theme.colorScheme.secondaryContainer, theme.colorScheme.onSecondaryContainer),
             const SizedBox(width: 8),
-            _TcoCard('Servis', totalService, Colors.blue.shade100),
+            _TcoCard('Servis', totalService, theme.colorScheme.primaryContainer, theme.colorScheme.onPrimaryContainer),
             const SizedBox(width: 8),
-            _TcoCard('Pojistky / rok', annualInsurance, Colors.purple.shade100),
+            _TcoCard('Pojistky / rok', annualInsurance, theme.colorScheme.secondaryContainer, theme.colorScheme.onSecondaryContainer),
           ],
         ),
         const SizedBox(height: 12),
@@ -354,9 +354,9 @@ class _TcoSection extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                         rodStackItems: [
                           BarChartRodStackItem(0, fuel,
-                              Colors.orange.shade400),
+                              theme.colorScheme.tertiary),
                           BarChartRodStackItem(
-                              fuel, fuel + service, Colors.blue.shade400),
+                              fuel, fuel + service, theme.colorScheme.primary),
                         ],
                       ),
                     ],
@@ -366,14 +366,17 @@ class _TcoSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _Legend(Colors.orange, 'Palivo'),
-              SizedBox(width: 12),
-              _Legend(Colors.blue, 'Servis'),
-            ],
-          ),
+          Builder(builder: (ctx) {
+            final cs = Theme.of(ctx).colorScheme;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _Legend(cs.tertiary, 'Palivo'),
+                const SizedBox(width: 12),
+                _Legend(cs.primary, 'Servis'),
+              ],
+            );
+          }),
         ],
         const SizedBox(height: 32),
       ],
@@ -387,21 +390,19 @@ class _TcoSection extends StatelessWidget {
 class _TcoCard extends StatelessWidget {
   final String label;
   final double value;
-  final Color color;
-  const _TcoCard(this.label, this.value, this.color);
+  final Color bgColor;
+  final Color textColor;
+  const _TcoCard(this.label, this.value, this.bgColor, this.textColor);
 
-  /// Czech-locale number formatter (e.g. `12 345`).
   static final _fmt = NumberFormat('#,##0', 'cs');
 
   @override
   Widget build(BuildContext context) {
-    final brightness = ThemeData.estimateBrightnessForColor(color);
-    final textColor = brightness == Brightness.dark ? Colors.white : Colors.black87;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: color,
+          color: bgColor,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
@@ -458,11 +459,10 @@ class _OverviewCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final cs = Theme.of(context).colorScheme;
     final avgScore = provider.averageDrivingScoreWith(baselineFor: baselineFor);
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Aspect ratio adapts to actual card width so text never overflows
         final cardWidth = (constraints.maxWidth - 12) / 2;
         final aspectRatio = (cardWidth / 100).clamp(1.2, 2.0);
         final crossCount = constraints.maxWidth >= 800 ? 3 : 2;
@@ -474,36 +474,34 @@ class _OverviewCards extends StatelessWidget {
           mainAxisSpacing: 12,
           childAspectRatio: aspectRatio,
           children: [
-        _StatCard('Celkem km', '${provider.totalKilometers.toStringAsFixed(0)} km',
-            Icons.route, theme.colorScheme.primaryContainer),
-        _StatCard(
-          'Průměrná spotřeba',
-          provider.averageFuelConsumption != null
-              ? '${provider.averageFuelConsumption!.toStringAsFixed(1)} l/100km'
-              : '–',
-          Icons.local_gas_station,
-          Colors.orange.shade100,
-        ),
-        _StatCard('Celkové náklady', '${provider.totalCost.toStringAsFixed(0)} Kč',
-            Icons.payments, Colors.green.shade100),
-        _StatCard(
-          'Průměrné skóre',
-          avgScore != null
-              ? '${avgScore.toStringAsFixed(1)} / 10'
-              : '–',
-          Icons.star,
-          Colors.amber.shade100,
-        ),
-        _StatCard('Počet jízd', '${provider.filteredTrips.length}', Icons.list_alt,
-            Colors.purple.shade100),
-        _StatCard(
-          'Náklady / km',
-          provider.costPerKmAverage != null
-              ? '${provider.costPerKmAverage!.toStringAsFixed(2)} Kč'
-              : '–',
-          Icons.trending_up,
-          Colors.teal.shade100,
-        ),
+            _StatCard('Celkem km', '${provider.totalKilometers.toStringAsFixed(0)} km',
+                Icons.route, cs.primaryContainer, cs.onPrimaryContainer),
+            _StatCard(
+              'Průměrná spotřeba',
+              provider.averageFuelConsumption != null
+                  ? '${provider.averageFuelConsumption!.toStringAsFixed(1)} l/100km'
+                  : '–',
+              Icons.local_gas_station,
+              cs.secondaryContainer, cs.onSecondaryContainer,
+            ),
+            _StatCard('Celkové náklady', '${provider.totalCost.toStringAsFixed(0)} Kč',
+                Icons.payments, cs.surfaceContainerHighest, cs.onSurface),
+            _StatCard(
+              'Průměrné skóre',
+              avgScore != null ? '${avgScore.toStringAsFixed(1)} / 10' : '–',
+              Icons.star,
+              cs.primaryContainer, cs.onPrimaryContainer,
+            ),
+            _StatCard('Počet jízd', '${provider.filteredTrips.length}',
+                Icons.list_alt, cs.surfaceContainerHighest, cs.onSurface),
+            _StatCard(
+              'Náklady / km',
+              provider.costPerKmAverage != null
+                  ? '${provider.costPerKmAverage!.toStringAsFixed(2)} Kč'
+                  : '–',
+              Icons.trending_up,
+              cs.secondaryContainer, cs.onSecondaryContainer,
+            ),
           ],
         );
       },
@@ -520,13 +518,12 @@ class _StatCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color bgColor;
+  final Color textColor;
 
-  const _StatCard(this.label, this.value, this.icon, this.bgColor);
+  const _StatCard(this.label, this.value, this.icon, this.bgColor, this.textColor);
 
   @override
   Widget build(BuildContext context) {
-    final brightness = ThemeData.estimateBrightnessForColor(bgColor);
-    final textColor = brightness == Brightness.dark ? Colors.white : Colors.black87;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -572,7 +569,7 @@ class _ChartTitle extends StatelessWidget {
                 .titleSmall
                 ?.copyWith(fontWeight: FontWeight.bold)),
         Text(subtitle,
-            style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+            style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
       ],
     );
   }
@@ -729,7 +726,7 @@ class _RouteBarChart extends StatelessWidget {
             barRods: [
               BarChartRodData(
                 toY: entries[i].value,
-                color: Colors.orange,
+                color: Theme.of(context).colorScheme.primary,
                 width: 32,
                 borderRadius: BorderRadius.circular(4),
                 rodStackItems: [],
@@ -815,11 +812,12 @@ class _SkillBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final color = value >= 8
-        ? Colors.green
+        ? cs.primary
         : value >= 6
-            ? Colors.orange
-            : Colors.red;
+            ? cs.tertiary
+            : cs.error;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

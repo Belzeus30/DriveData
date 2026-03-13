@@ -59,7 +59,7 @@ class NotificationService {
     tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
 
     const initSettings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      android: AndroidInitializationSettings('@mipmap/launcher_icon'),
       iOS: DarwinInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,

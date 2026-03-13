@@ -42,12 +42,21 @@ class CarsScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.garage_outlined, size: 72, color: Colors.grey[400]),
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.garage_outlined, size: 40,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer),
+                  ),
                   const SizedBox(height: 16),
                   Text('Žádná vozidla', style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
                   Text('Přidej své první vozidlo kliknutím na +',
-                      style: TextStyle(color: Colors.grey[600])),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 ],
               ),
             );
@@ -144,6 +153,10 @@ class _CarTile extends StatelessWidget {
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: accent.withValues(alpha: 0.35),
+                        width: 2,
+                      ),
                     ),
                     alignment: Alignment.center,
                     child: Icon(
@@ -256,15 +269,16 @@ class _SpecTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
       ),
       child: Text(
         label,
         style: TextStyle(
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: FontWeight.w500,
             color: cs.onSurfaceVariant),
       ),

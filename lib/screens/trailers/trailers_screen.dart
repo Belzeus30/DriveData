@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/trailer.dart';
 import '../../providers/trailer_provider.dart';
+import '../../widgets/section_header.dart';
 import '../settings/settings_screen.dart';
 import 'add_edit_trailer_screen.dart';
 
@@ -66,12 +67,8 @@ class TrailersScreen extends StatelessWidget {
             children: [
               // --- MOT REMINDERS ---
               if (reminders.isNotEmpty) ...[
-                Text(
-                  '⚠️ Vyžadují pozornost',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.error),
-                ),
-                const SizedBox(height: 8),
+                SectionHeader(title: 'Vyžadují pozornost', icon: Icons.warning_rounded,
+                    padding: const EdgeInsets.only(bottom: 8)),
                 ...reminders.map((r) => _TrailerCard(
                       trailer: r.trailer,
                       isOverdue: r.isOverdue,
@@ -84,12 +81,8 @@ class TrailersScreen extends StatelessWidget {
 
               // --- OTHER TRAILERS ---
               if (trailers.any((t) => !reminderIds.contains(t.id))) ...[
-                Text(
-                  '🔗 Vozíky',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.primary),
-                ),
-                const SizedBox(height: 8),
+                SectionHeader(title: 'Vozíky', icon: Icons.rv_hookup,
+                    padding: const EdgeInsets.only(bottom: 8)),
                 ...trailers
                     .where((t) => !reminderIds.contains(t.id))
                     .map((t) => _TrailerCard(
@@ -138,7 +131,7 @@ class TrailersScreen extends StatelessWidget {
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text('Smazat',
-                  style: TextStyle(color: Colors.red.shade700))),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error))),
         ],
       ),
     );
@@ -183,7 +176,7 @@ class _TrailerCard extends StatelessWidget {
 
     Color? cardColor;
     if (isOverdue) cardColor = cs.errorContainer;
-    if (isDueSoon) cardColor = Colors.orange.shade50;
+    if (isDueSoon) cardColor = cs.tertiaryContainer;
 
     String techStatus = 'STK nezadáno';
     Color techColor = cs.onSurfaceVariant;
@@ -195,10 +188,10 @@ class _TrailerCard extends StatelessWidget {
       } else if (isDueSoon) {
         techStatus =
             '⏳ STK za ${trailer.daysUntilTech} dní (${_dateFmt.format(trailer.nextTechDate!)})';
-        techColor = Colors.orange.shade800;
+        techColor = cs.onTertiaryContainer;
       } else {
         techStatus = '✅ STK do ${_dateFmt.format(trailer.nextTechDate!)}';
-        techColor = Colors.green.shade700;
+        techColor = cs.primary;
       }
     }
 
@@ -262,7 +255,7 @@ class _TrailerCard extends StatelessWidget {
             color: isOverdue
                 ? cs.error
                 : isDueSoon
-                    ? Colors.orange
+                    ? cs.tertiary
                     : cs.onSurfaceVariant,
           ),
           isThreeLine: true,

@@ -138,7 +138,7 @@ class _GoalsList extends StatelessWidget {
       return Center(
         child: Text(emptyText,
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[600])),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
       );
     }
     return ListView.builder(
@@ -221,11 +221,12 @@ class _GoalCard extends StatelessWidget {
     final icon = AppConstants.goalTypeIcons[goal.type] ?? '🎯';
     final label = AppConstants.goalTypeLabels[goal.type] ?? goal.type;
     final unit = AppConstants.goalTypeUnits[goal.type] ?? '';
+    final cs = theme.colorScheme;
     final progressColor = progress.isAchieved
-        ? Colors.green
+        ? cs.primary
         : progress.progress >= 0.7
-            ? Colors.orange
-            : theme.colorScheme.primary;
+            ? cs.tertiary
+            : cs.primary;
 
     String currentStr = progress.current != null
         ? '${progress.current!.toStringAsFixed(1)} $unit'
@@ -255,7 +256,7 @@ class _GoalCard extends StatelessWidget {
                           style: const TextStyle(fontWeight: FontWeight.bold)),
                       Text(carName,
                           style: TextStyle(
-                              fontSize: 12, color: Colors.grey[600])),
+                              fontSize: 12, color: cs.onSurfaceVariant)),
                     ],
                   ),
                 ),
@@ -264,12 +265,12 @@ class _GoalCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.green.shade100,
+                      color: cs.primaryContainer,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text('✅ Splněno!',
+                    child: Text('✅ Splněno!',
                         style: TextStyle(
-                            color: Colors.green,
+                            color: cs.onPrimaryContainer,
                             fontWeight: FontWeight.bold,
                             fontSize: 12)),
                   ),
@@ -337,7 +338,7 @@ class _GoalCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text('↓ méně = lépe',
                             style: TextStyle(
-                                fontSize: 10, color: Colors.grey[500])),
+                                fontSize: 10, color: cs.onSurfaceVariant)),
                       ],
                   ],
                 ),
@@ -364,8 +365,9 @@ class _DeadlineChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final overdue = deadline.isBefore(DateTime.now());
-    final color = overdue ? Colors.red : Colors.grey[600]!;
+    final color = overdue ? cs.error : cs.onSurfaceVariant;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

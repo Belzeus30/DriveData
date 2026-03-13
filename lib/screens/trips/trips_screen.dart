@@ -87,9 +87,19 @@ class _TripsScreenState extends State<TripsScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          noCars ? Icons.directions_car_outlined : Icons.route_outlined,
-                          size: 72, color: Colors.grey[400]),
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            noCars ? Icons.directions_car_outlined : Icons.route_outlined,
+                            size: 40,
+                            color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          ),
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           noCars ? 'Nejprve přidej vozidlo' : 'Žádné jízdy',
@@ -100,7 +110,7 @@ class _TripsScreenState extends State<TripsScreen> {
                               ? 'Přejdi na záložku Vozidla a přidej své vozidlo.\nPak budeš moci přidávat jízdy.'
                               : 'Přidej první jízdu kliknutím na +',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey[600])),
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                       ],
                     ),
                   ),
@@ -324,6 +334,15 @@ class _TripCard extends StatelessWidget {
                               border: Border.all(
                                   color: scoreColor.withValues(alpha: 0.5),
                                   width: 2),
+                              boxShadow: score != null
+                                  ? [
+                                      BoxShadow(
+                                        color: scoreColor.withValues(alpha: 0.25),
+                                        blurRadius: 8,
+                                        spreadRadius: 1,
+                                      )
+                                    ]
+                                  : null,
                             ),
                             alignment: Alignment.center,
                             child: Text(
@@ -421,13 +440,14 @@ class _StatChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = color ?? cs.onSurfaceVariant;
+    final fg = color ?? cs.primary;
+    final bg = color != null
+        ? color!.withValues(alpha: 0.12)
+        : cs.primaryContainer.withValues(alpha: 0.6);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color != null
-            ? color!.withValues(alpha: 0.1)
-            : cs.surfaceContainerHighest,
+        color: bg,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -462,7 +482,7 @@ class _EmojiChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
+        color: cs.primaryContainer.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(emoji, style: const TextStyle(fontSize: 13)),

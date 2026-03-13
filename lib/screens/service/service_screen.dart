@@ -7,6 +7,7 @@ import '../../providers/car_provider.dart';
 import '../../providers/service_provider.dart';
 import '../../providers/trip_provider.dart';
 import '../../utils/constants.dart';
+import '../../widgets/section_header.dart';
 import '../../widgets/vehicle_filter_widgets.dart';
 import '../settings/settings_screen.dart';
 import 'add_edit_service_screen.dart';
@@ -77,8 +78,15 @@ class ServiceScreen extends StatelessWidget {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.build_circle_outlined,
-                                    size: 72, color: Colors.grey[400]),
+                                Container(
+                                  width: 80, height: 80,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primaryContainer,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(Icons.build_circle_outlined, size: 40,
+                                      color: Theme.of(context).colorScheme.onPrimaryContainer),
+                                ),
                                 const SizedBox(height: 16),
                                 Text(
                                   cars.isEmpty ? 'Nejprve přidej vozidlo' : 'Žádné záznamy',
@@ -89,7 +97,7 @@ class ServiceScreen extends StatelessWidget {
                                       ? 'Přejdi na záložku Vozidla a přidej\nsvé vozidlo. Pak budeš moci přidávat servisní záznamy.'
                                       : 'Přidej první servisní záznam',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(color: Colors.grey[600])),
+                                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                               ],
                             ),
                           )
@@ -144,20 +152,15 @@ class _RemindersSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-          child: Text(
-            'Nadcházející servis',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-          ),
+        SectionHeader(
+          title: 'Nadcházející servis',
+          icon: Icons.access_time_rounded,
         ),
         ...reminders.map((r) => _ReminderTile(
               reminder: r,
               carProvider: carProvider,
             )),
-        const Divider(height: 1),
+        const Divider(),
       ],
     );
   }
@@ -188,11 +191,10 @@ class _ReminderTile extends StatelessWidget {
     final label =
         AppConstants.serviceTypeLabels[r.serviceType] ?? r.serviceType;
 
-    final bgColor = isOverdue
-        ? Colors.red.shade50
-        : Colors.orange.shade50;
-    final borderColor = isOverdue ? Colors.red.shade400 : Colors.orange.shade400;
-    final iconColor = isOverdue ? Colors.red : Colors.orange;
+    final cs = Theme.of(context).colorScheme;
+    final bgColor = isOverdue ? cs.errorContainer : cs.tertiaryContainer;
+    final borderColor = isOverdue ? cs.error : cs.tertiary;
+    final iconColor = isOverdue ? cs.onErrorContainer : cs.onTertiaryContainer;
 
     final List<Widget> dueParts = [];
     if (r.nextDueDate != null) {
@@ -252,7 +254,7 @@ class _ReminderTile extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.bold)),
                     if (car != null)
                       Text(car.fullName,
-                          style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                          style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
                     const SizedBox(height: 2),
                     Wrap(spacing: 10, runSpacing: 2, children: dueParts),
                   ],
@@ -288,8 +290,10 @@ class _SummaryBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Icon(Icons.build_circle_outlined,
+              color: Theme.of(context).colorScheme.onPrimaryContainer, size: 22),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,7 +356,7 @@ class _ServiceTile extends StatelessWidget {
                 height: 48,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.secondaryContainer,
+                  color: theme.colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(icon, style: const TextStyle(fontSize: 24)),
@@ -367,7 +371,7 @@ class _ServiceTile extends StatelessWidget {
                     if (carName.isNotEmpty)
                       Text(carName,
                           style: TextStyle(
-                              fontSize: 12, color: Colors.grey[600])),
+                              fontSize: 12, color: theme.colorScheme.onSurfaceVariant)),
                     Wrap(
                       spacing: 10,
                       runSpacing: 2,
@@ -376,23 +380,23 @@ class _ServiceTile extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.calendar_today,
-                                size: 12, color: Colors.grey[500]),
+                                size: 12, color: theme.colorScheme.onSurfaceVariant),
                             const SizedBox(width: 4),
                             Text(dateStr,
                                 style: TextStyle(
-                                    fontSize: 12, color: Colors.grey[600])),
+                                    fontSize: 12, color: theme.colorScheme.onSurfaceVariant)),
                           ],
                         ),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.speed,
-                                size: 12, color: Colors.grey[500]),
+                                size: 12, color: theme.colorScheme.onSurfaceVariant),
                             const SizedBox(width: 4),
                             Text(
                                 '${record.odometer.toStringAsFixed(0)} km',
                                 style: TextStyle(
-                                    fontSize: 12, color: Colors.grey[600])),
+                                    fontSize: 12, color: theme.colorScheme.onSurfaceVariant)),
                           ],
                         ),
                       ],
@@ -402,7 +406,7 @@ class _ServiceTile extends StatelessWidget {
                           style: TextStyle(
                               fontSize: 11,
                               fontStyle: FontStyle.italic,
-                              color: Colors.grey[600])),
+                              color: theme.colorScheme.onSurfaceVariant)),
                   ],
                 ),
               ),

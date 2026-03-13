@@ -16,7 +16,7 @@
       <stop offset="100%" stop-color="#0E0028"/>
     </radialGradient>
     <!-- Bar chart – same palette as the speedo arc, applied horizontally -->
-    <linearGradient id="barColorGrad" x1="120" y1="0" x2="368" y2="0" gradientUnits="userSpaceOnUse">
+    <linearGradient id="barColorGrad" x1="132" y1="0" x2="380" y2="0" gradientUnits="userSpaceOnUse">
       <stop offset="0%"   stop-color="#448AFF"/>
       <stop offset="50%"  stop-color="#E040FB"/>
       <stop offset="100%" stop-color="#AA00FF"/>
@@ -29,7 +29,8 @@
     </linearGradient>
   </defs>
 
-  <rect width="512" height="512" rx="108" fill="url(#bgGrad)"/>
+  <rect width="512" height="512" fill="url(#bgGrad)"/>
+  <g transform="translate(0,10)">
   <circle cx="256" cy="240" r="220" fill="none" stroke="#3D1B7E" stroke-width="1" opacity="0.5"/>
   <path d="M 83 340 A 200 200 0 1 1 429 340"
         fill="none" stroke="#210A52" stroke-width="36" stroke-linecap="round"/>
@@ -59,18 +60,19 @@
   <circle cx="256" cy="240" r="16" fill="#90CAF9"/>
   <circle cx="256" cy="240" r="8"  fill="white"/>
 
-  <rect x="120" y="400" width="48" height="70"  rx="8" fill="url(#barColorGrad)"/>
-  <rect x="184" y="365" width="48" height="105" rx="8" fill="url(#barColorGrad)"/>
-  <rect x="252" y="382" width="48" height="88"  rx="8" fill="url(#barColorGrad)"/>
-  <rect x="320" y="345" width="48" height="125" rx="8" fill="url(#barColorGrad)"/>
+  <rect x="132" y="393" width="48" height="70"  rx="8" fill="url(#barColorGrad)"/>
+  <rect x="196" y="358" width="48" height="105" rx="8" fill="url(#barColorGrad)"/>
+  <rect x="264" y="375" width="48" height="88"  rx="8" fill="url(#barColorGrad)"/>
+  <rect x="332" y="338" width="48" height="125" rx="8" fill="url(#barColorGrad)"/>
 
-  <rect x="120" y="400" width="48" height="70"  rx="8" fill="url(#barDepth)"/>
-  <rect x="184" y="365" width="48" height="105" rx="8" fill="url(#barDepth)"/>
-  <rect x="252" y="382" width="48" height="88"  rx="8" fill="url(#barDepth)"/>
-  <rect x="320" y="345" width="48" height="125" rx="8" fill="url(#barDepth)"/>
+  <rect x="132" y="393" width="48" height="70"  rx="8" fill="url(#barDepth)"/>
+  <rect x="196" y="358" width="48" height="105" rx="8" fill="url(#barDepth)"/>
+  <rect x="264" y="375" width="48" height="88"  rx="8" fill="url(#barDepth)"/>
+  <rect x="332" y="338" width="48" height="125" rx="8" fill="url(#barDepth)"/>
 
-  <rect x="120" y="400" width="48" height="10" rx="8" fill="white" opacity="0.2"/>
-  <rect x="184" y="365" width="48" height="10" rx="8" fill="white" opacity="0.2"/>
-  <rect x="252" y="382" width="48" height="10" rx="8" fill="white" opacity="0.2"/>
-  <rect x="320" y="345" width="48" height="10" rx="8" fill="white" opacity="0.2"/>
+  <rect x="132" y="393" width="48" height="10" rx="8" fill="white" opacity="0.2"/>
+  <rect x="196" y="358" width="48" height="10" rx="8" fill="white" opacity="0.2"/>
+  <rect x="264" y="375" width="48" height="10" rx="8" fill="white" opacity="0.2"/>
+  <rect x="332" y="338" width="48" height="10" rx="8" fill="white" opacity="0.2"/>
+  </g>
 </svg>

@@ -76,12 +76,6 @@ class ThemeProvider with ChangeNotifier {
     return ThemeData(
       colorScheme: cs,
       useMaterial3: true,
-      cardTheme: CardThemeData(
-        elevation: 2,
-        shadowColor: cs.shadow.withValues(alpha: 0.4),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      ),
       appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 2,
@@ -97,12 +91,34 @@ class ThemeProvider with ChangeNotifier {
         elevation: 8,
         shadowColor: cs.shadow,
       ),
+      listTileTheme: ListTileThemeData(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        minVerticalPadding: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      dividerTheme: const DividerThemeData(
+        space: 24,
+        indent: 16,
+        endIndent: 16,
+      ),
       chipTheme: ChipThemeData(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: cs.outline.withValues(alpha: 0.5)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: cs.primary, width: 2),
+        ),
         filled: true,
+        fillColor: cs.surfaceContainerLowest,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -110,10 +126,28 @@ class ThemeProvider with ChangeNotifier {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        shape: RoundedRectangleBorder(
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
+        backgroundColor: cs.primaryContainer,
+        foregroundColor: cs.onPrimaryContainer,
+        elevation: 2,
+      ),
+      cardTheme: CardThemeData(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.6)),
+        ),
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        color: cs.surfaceContainerLow,
       ),
     );
   }
