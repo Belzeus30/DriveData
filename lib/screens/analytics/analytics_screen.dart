@@ -116,6 +116,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   data: scoreTrend,
                   minY: 1,
                   maxY: 10,
+                  yInterval: 2,
                   color: Colors.blue,
                   dotColor: Colors.blueAccent,
                 ),
@@ -308,17 +309,31 @@ class _TcoSection extends StatelessWidget {
                 gridData: const FlGridData(
                     show: true, drawVerticalLine: false),
                 titlesData: FlTitlesData(
-                  leftTitles: const AxisTitles(
-                      sideTitles:
-                          SideTitles(showTitles: true, reservedSize: 40)),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 44,
+                      getTitlesWidget: (val, meta) => SideTitleWidget(
+                        meta: meta,
+                        child: Text(
+                          _fmt.format(val.toInt()),
+                          style: const TextStyle(fontSize: 9),
+                        ),
+                      ),
+                    ),
+                  ),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (val, meta) {
-                        final m = months[val.toInt()];
-                        final parts = m.split('-');
-                        return Text('${parts[1]}/${parts[0].substring(2)}',
-                            style: const TextStyle(fontSize: 9));
+                        final idx = val.toInt();
+                        if (idx < 0 || idx >= months.length) return const SizedBox.shrink();
+                        final parts = months[idx].split('-');
+                        return SideTitleWidget(
+                          meta: meta,
+                          child: Text('${parts[1]}/${parts[0].substring(2)}',
+                              style: const TextStyle(fontSize: 9)),
+                        );
                       },
                     ),
                   ),
@@ -564,12 +579,15 @@ class _ChartTitle extends StatelessWidget {
 ///
 /// Plots [data] as sequential Y values with automatic scaling between
 /// [minY]/[maxY]. Dots use [dotColor] and the line uses [color].
+/// An optional [yInterval] controls the left-axis label spacing.
 class _LineChartWidget extends StatelessWidget {
   final List<double> data;
   final double? minY;
   final double? maxY;
   final Color color;
   final Color dotColor;
+  /// Optional interval between left-axis labels (e.g. 2.0 for a 1–10 score).
+  final double? yInterval;
 
   const _LineChartWidget({
     required this.data,
@@ -577,6 +595,7 @@ class _LineChartWidget extends StatelessWidget {
     this.maxY,
     required this.color,
     required this.dotColor,
+    this.yInterval,
   });
 
   @override
@@ -589,12 +608,32 @@ class _LineChartWidget extends StatelessWidget {
         maxY: maxY,
         gridData: const FlGridData(show: true, drawVerticalLine: false),
         borderData: FlBorderData(show: false),
-        titlesData: const FlTitlesData(
+        titlesData: FlTitlesData(
           leftTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: true, reservedSize: 32)),
-          bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 36,
+              interval: yInterval,
+              getTitlesWidget: (val, meta) => SideTitleWidget(
+                meta: meta,
+                child: Text(
+                  val.toStringAsFixed(val.truncateToDouble() == val ? 0 : 1),
+                  style: const TextStyle(fontSize: 10),
+                ),
+              ),
+            ),
+          ),
+          bottomTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        ),
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipItems: (spots) => spots.map((s) => LineTooltipItem(
+              s.y.toStringAsFixed(1),
+              const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+            )).toList(),
+          ),
         ),
         lineBarsData: [
           LineChartBarData(
@@ -651,15 +690,31 @@ class _RouteBarChart extends StatelessWidget {
           borderData: FlBorderData(show: false),
           gridData: const FlGridData(show: true, drawVerticalLine: false),
           titlesData: FlTitlesData(
-            leftTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: true, reservedSize: 32)),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 36,
+                getTitlesWidget: (val, meta) => SideTitleWidget(
+                  meta: meta,
+                  child: Text(
+                    val.toStringAsFixed(1),
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                ),
+              ),
+            ),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
                 getTitlesWidget: (val, meta) {
-                  final key = entries[val.toInt()].key;
-                  return Text(_routeLabels[key] ?? key,
-                      style: const TextStyle(fontSize: 10));
+                  final idx = val.toInt();
+                  if (idx < 0 || idx >= entries.length) return const SizedBox.shrink();
+                  final key = entries[idx].key;
+                  return SideTitleWidget(
+                    meta: meta,
+                    child: Text(_routeLabels[key] ?? key,
+                        style: const TextStyle(fontSize: 10)),
+                  );
                 },
               ),
             ),
