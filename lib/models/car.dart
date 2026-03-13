@@ -61,18 +61,18 @@ class Car {
 
   factory Car.fromMap(Map<String, dynamic> map) {
     return Car(
-      id: map['id'],
+      id: map['id'] as String,
       vehicleType: (map['vehicleType'] as String?) ?? 'Auto',
-      make: map['make'],
-      model: map['model'],
-      year: map['year'],
-      fuelType: map['fuelType'],
-      tankCapacity: map['tankCapacity'],
-      engineVolume: map['engineVolume'],
-      enginePower: map['enginePower'],
+      make: map['make'] as String,
+      model: map['model'] as String,
+      year: (map['year'] as num).toInt(),
+      fuelType: map['fuelType'] as String,
+      tankCapacity: (map['tankCapacity'] as num).toDouble(),
+      engineVolume: (map['engineVolume'] as num).toDouble(),
+      enginePower: (map['enginePower'] as num).toInt(),
       typicalConsumption: (map['typicalConsumption'] as num?)?.toDouble(),
       spz: map['spz'] as String?,
-      note: map['note'],
+      note: map['note'] as String?,
     );
   }
 
