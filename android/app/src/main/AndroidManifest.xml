@@ -6,7 +6,7 @@
     <!-- Přenaplánování po restartu zařízení -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
-        android:label="drivedata"
+        android:label="Drive Data"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:allowBackup="false"
