@@ -7,6 +7,7 @@ import '../../providers/car_provider.dart';
 import '../../providers/insurance_provider.dart';
 import '../../providers/service_provider.dart';
 import '../../providers/trip_provider.dart';
+import '../../utils/constants.dart';
 import '../settings/settings_screen.dart';
 
 /// Analytics dashboard screen.
@@ -149,6 +150,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
             // --- DETAILED SCORES ---
             _DetailedScores(provider: tripProvider, baselineFor: baselineFor),
+            const SizedBox(height: 32),
+
+            // --- CO2 EMISSIONS ---
+            _Co2Section(trips: trips, carProvider: carProvider),
             const SizedBox(height: 32),
 
             // --- TOTAL COST OF OWNERSHIP (TCO) ---
@@ -838,6 +843,79 @@ class _SkillBar extends StatelessWidget {
             color: color,
             backgroundColor: color.withValues(alpha: 0.2),
           ),
+        ),
+      ],
+    );
+  }
+}
+
+// -----------------------------------------------------------------------
+
+/// CO₂ emissions summary section.
+///
+/// Computes average CO₂ g/km and total CO₂ kg for the filtered trips,
+/// using emission factors from [AppConstants.fuelCo2GramsPerLiter].
+/// Electric vehicles contribute 0 g/km and are included in the average.
+class _Co2Section extends StatelessWidget {
+  final List<Trip> trips;
+  final CarProvider carProvider;
+
+  const _Co2Section({required this.trips, required this.carProvider});
+
+  /// Returns (avgGPerKm, totalKg) or null if no usable trips.
+  ({double avgGPerKm, double totalKg})? _compute() {
+    double totalCo2G = 0;
+    double totalKm = 0;
+    int count = 0;
+    for (final t in trips) {
+      final consumption = t.fuelConsumption;
+      if (consumption == null) continue;
+      final distance = (t.odometerEnd - t.odometerStart).toDouble();
+      if (distance <= 0) continue;
+      final car = t.carId != null ? carProvider.getCarById(t.carId!) : null;
+      final factor = AppConstants.fuelCo2GramsPerLiter[car?.fuelType] ?? 2392.0;
+      final co2G = consumption / 100 * factor * distance;
+      totalCo2G += co2G;
+      totalKm += distance;
+      count++;
+    }
+    if (count == 0 || totalKm == 0) return null;
+    return (avgGPerKm: totalCo2G / totalKm, totalKg: totalCo2G / 1000);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final data = _compute();
+    if (data == null) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _ChartTitle('Emise CO₂', 'odhad dle spotřeby a typu paliva'),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _StatCard(
+                'Průměrné CO₂',
+                '${data.avgGPerKm.toStringAsFixed(0)} g/km',
+                Icons.eco,
+                cs.primaryContainer,
+                cs.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _StatCard(
+                'Celkem CO₂',
+                '${data.totalKg.toStringAsFixed(1)} kg',
+                Icons.cloud_outlined,
+                cs.surfaceContainerHighest,
+                cs.onSurface,
+              ),
+            ),
+          ],
         ),
       ],
     );

@@ -18,6 +18,17 @@ class AppConstants {
     'Hybrid',
   ];
 
+  /// CO₂ emission factors in grams per liter of fuel.
+  /// Sources: EEA / Czech Ministry of the Environment reference values.
+  static const Map<String, double> fuelCo2GramsPerLiter = {
+    'Benzín': 2392.0,
+    'Diesel': 2640.0,
+    'LPG':    1635.0,
+    'CNG':    1960.0,
+    'Elektro': 0.0,
+    'Hybrid':  2392.0,
+  };
+
   static const List<String> routeTypes = [
     'city',
     'highway',
