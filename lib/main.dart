@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'providers/car_provider.dart';
 import 'providers/trip_provider.dart';
 import 'providers/service_provider.dart';
@@ -14,11 +12,6 @@ import 'screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // SQLite FFI for Windows and Linux desktop
-  if (Platform.isWindows || Platform.isLinux) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
   // Initialise notifications (Android only — other platforms are ignored)
   await NotificationService.instance.init();
   await NotificationService.instance.requestPermissions();
