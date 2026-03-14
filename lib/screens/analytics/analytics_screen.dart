@@ -872,7 +872,7 @@ class _Co2Section extends StatelessWidget {
       if (consumption == null) continue;
       final distance = (t.odometerEnd - t.odometerStart).toDouble();
       if (distance <= 0) continue;
-      final car = t.carId != null ? carProvider.getCarById(t.carId!) : null;
+      final car = carProvider.getCarById(t.carId);
       final factor = AppConstants.fuelCo2GramsPerLiter[car?.fuelType] ?? 2392.0;
       final co2G = consumption / 100 * factor * distance;
       totalCo2G += co2G;
